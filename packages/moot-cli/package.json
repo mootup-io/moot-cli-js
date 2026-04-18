@@ -1,7 +1,46 @@
 {
   "name": "@mootup/moot-cli",
-  "version": "0.0.0",
-  "private": true,
-  "description": "placeholder — see docs/specs/npm-moot-cli-cli.md (AD-c)",
-  "license": "MIT"
+  "version": "0.1.0-rc.0",
+  "description": "Host-side operator CLI for the Moot agent team workflow. Wraps devcontainer launch and delegates in-container work to the Python moot CLI via docker exec.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "mootup": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && chmod +x dist/bin.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@mootup/moot-sdk": "*",
+    "@mootup/moot-templates": "*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "msw": "^2.4.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

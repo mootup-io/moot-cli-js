@@ -26,3 +26,6 @@ jobs:
       - run: npm publish --access public -w @mootup/moot-templates
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public -w @mootup/moot-cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
