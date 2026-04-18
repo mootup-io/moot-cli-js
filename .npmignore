@@ -1,0 +1,7 @@
+*
+!packages/*/dist/
+!packages/*/src/
+!packages/*/openapi.yaml
+!packages/*/package.json
+!packages/*/README.md
+!packages/*/LICENSE

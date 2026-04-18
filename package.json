@@ -1,0 +1,20 @@
+{
+  "name": "mootup-moot-cli-js",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Host-side JS packages for mootup (moot-cli, moot-sdk, moot-templates).",
+  "license": "MIT",
+  "workspaces": ["packages/*"],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "npm run -ws --if-present build",
+    "test": "npm run -ws --if-present test",
+    "lint": "npm run -ws --if-present lint",
+    "sync:oas": "npm run -w @mootup/moot-sdk sync:oas"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

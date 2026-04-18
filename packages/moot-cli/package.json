@@ -1,0 +1,7 @@
+{
+  "name": "@mootup/moot-cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "placeholder — see docs/specs/npm-moot-cli-cli.md (AD-c)",
+  "license": "MIT"
+}

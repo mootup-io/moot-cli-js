@@ -1,0 +1,3059 @@
+openapi: 3.1.0
+info:
+  title: Convo Space API
+  version: 0.2.0
+paths:
+  /health:
+    get:
+      summary: Health
+      description: Health check — no auth required. Used by deploy scripts and monitoring.
+      operationId: health_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Health Health Get
+  /api/spaces/{space_id}/events/stream:
+    get:
+      summary: Stream Events
+      operationId: stream_events_api_spaces__space_id__events_stream_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces:
+    get:
+      summary: List Spaces
+      operationId: list_spaces_api_spaces_get
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by status (active, paused, archived)
+          title: Status
+        description: Filter by status (active, paused, archived)
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Spaces Api Spaces Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      summary: Create Space
+      operationId: create_space_api_spaces_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpaceRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Space Api Spaces Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/status:
+    get:
+      summary: Get Status
+      operationId: get_status_api_spaces__space_id__status_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Status Api Spaces  Space Id  Status Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}:
+    patch:
+      summary: Update Space
+      operationId: update_space_api_spaces__space_id__patch
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSpaceRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Space Api Spaces  Space Id  Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/archive:
+    post:
+      summary: Archive Space
+      operationId: archive_space_api_spaces__space_id__archive_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Archive Space Api Spaces  Space Id  Archive Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/events:
+    get:
+      summary: Get Events
+      operationId: get_events_api_spaces__space_id__events_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: since
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Event ID cursor — return events after this
+          title: Since
+        description: Event ID cursor — return events after this
+      - name: before
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Event ID cursor — return events before this
+          title: Before
+        description: Event ID cursor — return events before this
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 200
+          minimum: 1
+          default: 50
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Events Api Spaces  Space Id  Events Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      summary: Add Event
+      operationId: add_event_api_spaces__space_id__events_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddEventRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Add Event Api Spaces  Space Id  Events Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/transcript:
+    get:
+      summary: Get Transcript
+      operationId: get_transcript_api_spaces__space_id__transcript_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: start
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Start
+      - name: end
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: End
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Transcript Api Spaces  Space Id  Transcript Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/participants:
+    get:
+      summary: Get Participants
+      operationId: get_participants_api_spaces__space_id__participants_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Participants Api Spaces  Space Id  Participants
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/participants/{participant_id}/status:
+    patch:
+      summary: Update Participant Status
+      operationId: update_participant_status_api_spaces__space_id__participants__participant_id__status_patch
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: participant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Participant Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateParticipantStatusRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Participant Status Api Spaces  Space Id  Participants  Participant
+                  Id  Status Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/participants/{participant_id}/heartbeat:
+    post:
+      summary: Participant Heartbeat
+      description: Touch status_updated_at without changing status text.
+      operationId: participant_heartbeat_api_spaces__space_id__participants__participant_id__heartbeat_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: participant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Participant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Participant Heartbeat Api Spaces  Space Id  Participants  Participant
+                  Id  Heartbeat Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/speech:
+    post:
+      summary: Add Speech
+      operationId: add_speech_api_spaces__space_id__speech_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddSpeechRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Add Speech Api Spaces  Space Id  Speech Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/response:
+    post:
+      summary: Post Response
+      operationId: post_response_api_spaces__space_id__response_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostResponseRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Post Response Api Spaces  Space Id  Response Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/join:
+    post:
+      summary: Join Space
+      operationId: join_space_api_spaces__space_id__join_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JoinSpaceRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Join Space Api Spaces  Space Id  Join Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/links:
+    post:
+      summary: Create Link
+      operationId: create_link_api_spaces__space_id__links_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLinkRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Link Api Spaces  Space Id  Links Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Links
+      operationId: list_links_api_spaces__space_id__links_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: link_type
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by link type
+          title: Link Type
+        description: Filter by link type
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Links Api Spaces  Space Id  Links Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/links/{link_id}:
+    delete:
+      summary: Delete Link
+      operationId: delete_link_api_spaces__space_id__links__link_id__delete
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: link_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Link Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Delete Link Api Spaces  Space Id  Links  Link Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/events/{event_id}:
+    get:
+      summary: Get Event
+      operationId: get_event_api_spaces__space_id__events__event_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Event Api Spaces  Space Id  Events  Event Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/mentions/{participant_id}:
+    get:
+      summary: Get Mentions
+      operationId: get_mentions_api_spaces__space_id__mentions__participant_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: participant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Participant Id
+      - name: since
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Event ID cursor
+          title: Since
+        description: Event ID cursor
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Mentions Api Spaces  Space Id  Mentions  Participant
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/activity:
+    get:
+      summary: Get Activity
+      operationId: get_activity_api_spaces__space_id__activity_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: since
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 'ISO 8601 timestamp — only events after this time (default:
+            1 hour ago)'
+          title: Since
+        description: 'ISO 8601 timestamp — only events after this time (default: 1
+          hour ago)'
+      - name: max_events
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 20
+          minimum: 1
+          description: Max events per participant
+          default: 5
+          title: Max Events
+        description: Max events per participant
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Activity Api Spaces  Space Id  Activity Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/summary:
+    get:
+      summary: Get Summary
+      operationId: get_summary_api_spaces__space_id__summary_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: start
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Window start (ISO 8601)
+          title: Start
+        description: Window start (ISO 8601)
+      - name: end
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Window end (ISO 8601)
+          title: End
+        description: Window end (ISO 8601)
+      - name: regenerate
+        in: query
+        required: false
+        schema:
+          type: boolean
+          description: Force regenerate, bypass cache
+          default: false
+          title: Regenerate
+        description: Force regenerate, bypass cache
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Summary Api Spaces  Space Id  Summary Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/actors:
+    post:
+      summary: Register Actor
+      operationId: register_actor_api_actors_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterActorRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Register Actor Api Actors Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/actors/me:
+    get:
+      summary: Get Me
+      operationId: get_me_api_actors_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Get Me Api Actors Me Get
+  /api/actors/me/heartbeat:
+    post:
+      summary: Actor Heartbeat
+      description: Touch last_seen_at on the actor. Actor-level, not space-specific.
+      operationId: actor_heartbeat_api_actors_me_heartbeat_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Actor Heartbeat Api Actors Me Heartbeat Post
+  /api/actors/me/spaces:
+    get:
+      summary: Get My Spaces
+      description: List spaces the authenticated actor participates in.
+      operationId: get_my_spaces_api_actors_me_spaces_get
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by space status
+          title: Status
+        description: Filter by space status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get My Spaces Api Actors Me Spaces Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/actors/me/agents:
+    get:
+      summary: Get My Agents
+      operationId: get_my_agents_api_actors_me_agents_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties: true
+                  type: object
+                type: array
+                title: Response Get My Agents Api Actors Me Agents Get
+  /api/actors/me/orientation:
+    get:
+      summary: Get Orientation
+      description: Return everything an agent needs to start working in one call.
+      operationId: get_orientation_api_actors_me_orientation_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Get Orientation Api Actors Me Orientation Get
+  /api/actors/focus:
+    put:
+      summary: Set Focus
+      description: Set focus_space_id for multiple agents. Sponsor only.
+      operationId: set_focus_api_actors_focus_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetFocusRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Set Focus Api Actors Focus Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/actors/{actor_id}:
+    patch:
+      summary: Update Actor
+      operationId: update_actor_api_actors__actor_id__patch
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateActorRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Actor Api Actors  Actor Id  Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      summary: Delete Actor
+      operationId: delete_actor_api_actors__actor_id__delete
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Delete Actor Api Actors  Actor Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/agents/{agent_id}/first-key:
+    post:
+      summary: First Key
+      description: 'Issue the initial API key for a keyless agent.
+
+
+        Authorization: caller must be the agent''s sponsor. Returns the
+
+        plaintext key (one-time). 409 if the agent already has a key.
+
+
+        Used by moot-cli on first `moot up` to claim the agents provisioned
+
+        by default-space provisioning. See
+
+        ``docs/specs/default-space-provisioning.md`` D10/D14.'
+      operationId: first_key_api_agents__agent_id__first_key_post
+      parameters:
+      - name: agent_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Agent Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response First Key Api Agents  Agent Id  First Key Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/actors/{actor_id}/rotate-key:
+    post:
+      summary: Rotate Key
+      operationId: rotate_key_api_actors__actor_id__rotate_key_post
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Rotate Key Api Actors  Actor Id  Rotate Key Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/actors/{actor_id}/release:
+    post:
+      summary: Release Agent
+      description: 'Release an agent identity, marking it available for another installation
+        to claim.
+
+
+        Ownership: sponsor (or admin, if they sponsor the agent). Humans cannot
+
+        be released — ``is_connected`` is an agent-only concept. Idempotent:
+
+        releasing an already-released agent returns ``status="already_released"``.
+
+
+        Does NOT invalidate the current key. The currently-holding installation
+
+        can finish its work; the next rotate-key call (from any installation)
+
+        will succeed without the force header because ``is_connected`` is now
+
+        FALSE.'
+      operationId: release_agent_api_actors__actor_id__release_post
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Release Agent Api Actors  Actor Id  Release Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/personal-access-tokens:
+    post:
+      summary: Create Pat
+      description: Create a PAT. Returns the plaintext token exactly once.
+      operationId: create_pat_api_personal_access_tokens_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePatRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Pat Api Personal Access Tokens Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Pats
+      description: List the authenticated user's PATs (active by default).
+      operationId: list_pats_api_personal_access_tokens_get
+      parameters:
+      - name: include_revoked
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Include Revoked
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Pats Api Personal Access Tokens Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/personal-access-tokens/{pat_id}:
+    delete:
+      summary: Revoke Pat
+      description: Revoke a PAT. Returns 404 on cross-user attempts (don't leak existence).
+      operationId: revoke_pat_api_personal_access_tokens__pat_id__delete
+      parameters:
+      - name: pat_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Pat Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Revoke Pat Api Personal Access Tokens  Pat Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /auth/request:
+    post:
+      summary: Auth Request
+      description: 'Email-driven session issuance (alpha: no email delivery).
+
+
+        Existing user: issues a new session, sets cookie, returns {created: false}.
+
+        New user with valid invite_code: creates user, issues session, returns
+
+        {created: true}. Alpha compromise: the cookie is set directly in the
+
+        response instead of sending a link to the user''s email.
+
+
+        R6 Stage E: the whole flow runs under a single caller-managed
+
+        transaction via auth_service.issue_magic_link_session(conn, ...).
+
+        Cookie is set AFTER commit.'
+      operationId: auth_request_auth_request_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequestRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Auth Request Auth Request Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /auth/logout:
+    post:
+      summary: Auth Logout
+      description: 'Revoke the current session. Idempotent: safe to call without a
+        cookie.'
+      operationId: auth_logout_auth_logout_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Auth Logout Auth Logout Post
+  /api/invites/redeem:
+    post:
+      summary: Redeem Invite
+      description: 'Redeem an invite code: create account + assign to tenant + issue
+        session.
+
+
+        No auth required. Session cookie is set on the response; the response body
+
+        does NOT contain a plaintext session token.
+
+
+        R6 Stage E: the whole flow runs inside a single
+
+        ``pool.acquire() + conn.transaction()`` block. If
+
+        ``create_session_for_user`` fails mid-flow, the actor insert, tenant
+
+        assignment, and invite usage increment all roll back atomically.
+
+        Cookie is only set after the transaction commits.'
+      operationId: redeem_invite_api_invites_redeem_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RedeemInviteRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Redeem Invite Api Invites Redeem Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/threads:
+    post:
+      summary: Create Thread
+      operationId: create_thread_api_spaces__space_id__threads_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateThreadRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Thread Api Spaces  Space Id  Threads Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/threads/{event_id}:
+    get:
+      summary: Get Thread
+      description: Get a thread and its messages. event_id can be the thread_id or
+        the parent event.
+      operationId: get_thread_api_spaces__space_id__threads__event_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: event_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Event Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Thread Api Spaces  Space Id  Threads  Event Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/decisions:
+    get:
+      summary: Get Decisions
+      operationId: get_decisions_api_spaces__space_id__decisions_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by status (proposed, resolved, rejected)
+          title: Status
+        description: Filter by status (proposed, resolved, rejected)
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Decisions Api Spaces  Space Id  Decisions Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      summary: Propose Decision
+      operationId: propose_decision_api_spaces__space_id__decisions_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposeDecisionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Propose Decision Api Spaces  Space Id  Decisions Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/decisions/summary:
+    get:
+      summary: Get Decision Summary
+      operationId: get_decision_summary_api_spaces__space_id__decisions_summary_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Decision Summary Api Spaces  Space Id  Decisions
+                  Summary Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/decisions/{decision_id}:
+    get:
+      summary: Get Decision
+      operationId: get_decision_api_spaces__space_id__decisions__decision_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: decision_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Decision Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Decision Api Spaces  Space Id  Decisions  Decision
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/decisions/{decision_id}/resolve:
+    put:
+      summary: Resolve Decision
+      operationId: resolve_decision_api_spaces__space_id__decisions__decision_id__resolve_put
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: decision_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Decision Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveDecisionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Resolve Decision Api Spaces  Space Id  Decisions  Decision
+                  Id  Resolve Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/questions:
+    post:
+      summary: Ask Question
+      operationId: ask_question_api_spaces__space_id__questions_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AskQuestionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Ask Question Api Spaces  Space Id  Questions Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: Get Questions
+      operationId: get_questions_api_spaces__space_id__questions_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Get Questions Api Spaces  Space Id  Questions Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/questions/{question_id}:
+    get:
+      summary: Get Question
+      operationId: get_question_api_spaces__space_id__questions__question_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: question_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Question Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Question Api Spaces  Space Id  Questions  Question
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      summary: Update Question
+      operationId: update_question_api_spaces__space_id__questions__question_id__patch
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: question_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Question Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateQuestionRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Question Api Spaces  Space Id  Questions  Question
+                  Id  Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/timers:
+    post:
+      summary: Create Timer
+      operationId: create_timer_api_spaces__space_id__timers_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTimerRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Timers
+      operationId: list_timers_api_spaces__space_id__timers_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/timers/{timer_id}:
+    delete:
+      summary: Cancel Timer
+      operationId: cancel_timer_api_spaces__space_id__timers__timer_id__delete
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: timer_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Timer Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/archives:
+    post:
+      summary: Create Archive
+      operationId: create_archive_api_spaces__space_id__archives_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArchiveRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Archive Api Spaces  Space Id  Archives Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Archives
+      operationId: list_archives_api_spaces__space_id__archives_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Archives Api Spaces  Space Id  Archives Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/spaces/{space_id}/archives/{archive_id}:
+    get:
+      summary: Get Archive
+      operationId: get_archive_api_spaces__space_id__archives__archive_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: archive_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Archive Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Archive Api Spaces  Space Id  Archives  Archive
+                  Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/prompt-rules:
+    post:
+      summary: Create Prompt Rule
+      description: Create a new alarm or scheduled prompt rule.
+      operationId: create_prompt_rule_api_prompt_rules_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePromptRuleRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Create Prompt Rule Api Prompt Rules Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: List Prompt Rules
+      description: List prompt rules for the authenticated tenant.
+      operationId: list_prompt_rules_api_prompt_rules_get
+      parameters:
+      - name: space_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by space ID
+          title: Space Id
+        description: Filter by space ID
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response List Prompt Rules Api Prompt Rules Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/prompt-rules/{rule_id}:
+    get:
+      summary: Get Prompt Rule
+      description: Get a single prompt rule by ID.
+      operationId: get_prompt_rule_api_prompt_rules__rule_id__get
+      parameters:
+      - name: rule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Rule Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Prompt Rule Api Prompt Rules  Rule Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      summary: Update Prompt Rule
+      description: Update a prompt rule (toggle enabled, change threshold, etc.).
+      operationId: update_prompt_rule_api_prompt_rules__rule_id__patch
+      parameters:
+      - name: rule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Rule Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePromptRuleRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Update Prompt Rule Api Prompt Rules  Rule Id  Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      summary: Delete Prompt Rule
+      description: Delete a prompt rule.
+      operationId: delete_prompt_rule_api_prompt_rules__rule_id__delete
+      parameters:
+      - name: rule_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Rule Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Delete Prompt Rule Api Prompt Rules  Rule Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/tenants:
+    post:
+      summary: Create Tenant Endpoint
+      description: Create a new tenant. Requires authenticated human actor.
+      operationId: create_tenant_endpoint_api_tenants_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Create Tenant Endpoint Api Tenants Post
+  /api/tenants/{tenant_id}:
+    get:
+      summary: Get Tenant Endpoint
+      description: Get tenant info. Actor must belong to the tenant.
+      operationId: get_tenant_endpoint_api_tenants__tenant_id__get
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Get Tenant Endpoint Api Tenants  Tenant Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants:
+    get:
+      summary: Admin List Tenants
+      description: List all tenants. Admin only.
+      operationId: admin_list_tenants_api_admin_tenants_get
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by status
+          title: Status
+        description: Filter by status
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Admin List Tenants Api Admin Tenants Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      summary: Admin Create Tenant
+      description: Create a tenant without assigning the creator. Admin only.
+      operationId: admin_create_tenant_api_admin_tenants_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCreateTenantRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Create Tenant Api Admin Tenants Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants/{tenant_id}:
+    get:
+      summary: Admin Get Tenant
+      description: Get any tenant. Admin only.
+      operationId: admin_get_tenant_api_admin_tenants__tenant_id__get
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Get Tenant Api Admin Tenants  Tenant Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants/{tenant_id}/suspend:
+    put:
+      summary: Admin Suspend Tenant
+      description: Suspend a tenant. All authenticated requests for this tenant will
+        get 403.
+      operationId: admin_suspend_tenant_api_admin_tenants__tenant_id__suspend_put
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Suspend Tenant Api Admin Tenants  Tenant Id  Suspend
+                  Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants/{tenant_id}/reactivate:
+    put:
+      summary: Admin Reactivate Tenant
+      description: Reactivate a suspended tenant.
+      operationId: admin_reactivate_tenant_api_admin_tenants__tenant_id__reactivate_put
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Reactivate Tenant Api Admin Tenants  Tenant
+                  Id  Reactivate Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/tenants/{tenant_id}/actors:
+    get:
+      summary: Admin List Tenant Actors
+      description: List all actors in a tenant. Admin only.
+      operationId: admin_list_tenant_actors_api_admin_tenants__tenant_id__actors_get
+      parameters:
+      - name: tenant_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Tenant Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Admin List Tenant Actors Api Admin Tenants  Tenant
+                  Id  Actors Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/actors/{actor_id}:
+    delete:
+      summary: Admin Delete Actor
+      description: Delete any actor. Admin only. Cannot delete yourself.
+      operationId: admin_delete_actor_api_admin_actors__actor_id__delete
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Delete Actor Api Admin Actors  Actor Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/actors/{actor_id}/admin:
+    put:
+      summary: Admin Toggle Admin
+      description: Grant or revoke admin status. Admin only.
+      operationId: admin_toggle_admin_api_admin_actors__actor_id__admin_put
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminToggleAdminRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Toggle Admin Api Admin Actors  Actor Id  Admin
+                  Put
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/invites:
+    post:
+      summary: Admin Create Invite
+      description: Create an invite code for a tenant. Admin only.
+      operationId: admin_create_invite_api_admin_invites_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminCreateInviteRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Create Invite Api Admin Invites Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      summary: Admin List Invites
+      description: List invites. Admin only.
+      operationId: admin_list_invites_api_admin_invites_get
+      parameters:
+      - name: tenant_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by tenant
+          title: Tenant Id
+        description: Filter by tenant
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Admin List Invites Api Admin Invites Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/admin/invites/{invite_id}:
+    delete:
+      summary: Admin Delete Invite
+      description: Revoke an invite. Admin only.
+      operationId: admin_delete_invite_api_admin_invites__invite_id__delete
+      parameters:
+      - name: invite_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Invite Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Admin Delete Invite Api Admin Invites  Invite Id  Delete
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/search:
+    get:
+      summary: Search
+      operationId: search_api_search_get
+      parameters:
+      - name: q
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          description: Search query
+          title: Q
+        description: Search query
+      - name: space_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search within a specific space
+          title: Space Id
+        description: Search within a specific space
+      - name: linked_to
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Search a space + all linked spaces (1 hop)
+          title: Linked To
+        description: Search a space + all linked spaces (1 hop)
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          description: Max results
+          default: 20
+          title: Limit
+        description: Max results
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Search Api Search Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    AddEventRequest:
+      properties:
+        speaker_id:
+          type: string
+          maxLength: 200
+          title: Speaker Id
+        speaker_name:
+          type: string
+          maxLength: 500
+          title: Speaker Name
+        speaker_type:
+          type: string
+          maxLength: 200
+          title: Speaker Type
+          default: human
+        text:
+          type: string
+          maxLength: 65536
+          title: Text
+        parent_event_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Parent Event Id
+        references:
+          items:
+            type: string
+          type: array
+          title: References
+          default: []
+        thread_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Thread Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - speaker_id
+      - speaker_name
+      - text
+      title: AddEventRequest
+    AddSpeechRequest:
+      properties:
+        speaker_id:
+          type: string
+          maxLength: 200
+          title: Speaker Id
+        speaker_name:
+          type: string
+          maxLength: 500
+          title: Speaker Name
+        text:
+          type: string
+          maxLength: 65536
+          title: Text
+        thread_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Thread Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - speaker_id
+      - speaker_name
+      - text
+      title: AddSpeechRequest
+    AdminCreateInviteRequest:
+      properties:
+        tenant_id:
+          type: string
+          maxLength: 200
+          title: Tenant Id
+        email:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Email
+        max_uses:
+          type: integer
+          title: Max Uses
+          default: 1
+        expires_in_hours:
+          type: integer
+          title: Expires In Hours
+          default: 72
+      type: object
+      required:
+      - tenant_id
+      title: AdminCreateInviteRequest
+    AdminCreateTenantRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 500
+          title: Name
+      type: object
+      required:
+      - name
+      title: AdminCreateTenantRequest
+    AdminToggleAdminRequest:
+      properties:
+        is_admin:
+          type: boolean
+          title: Is Admin
+      type: object
+      required:
+      - is_admin
+      title: AdminToggleAdminRequest
+    AskQuestionRequest:
+      properties:
+        asked_by:
+          type: string
+          maxLength: 200
+          title: Asked By
+        text:
+          type: string
+          maxLength: 65536
+          title: Text
+        assigned_to:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Assigned To
+      type: object
+      required:
+      - asked_by
+      - text
+      title: AskQuestionRequest
+    AuthRequestRequest:
+      properties:
+        email:
+          type: string
+          maxLength: 200
+          title: Email
+        invite_code:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Invite Code
+        display_name:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Display Name
+      type: object
+      required:
+      - email
+      title: AuthRequestRequest
+    CreateArchiveRequest:
+      properties:
+        session_id:
+          type: string
+          maxLength: 200
+          title: Session Id
+        summary:
+          type: string
+          maxLength: 65536
+          title: Summary
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+          default: {}
+      type: object
+      required:
+      - session_id
+      - summary
+      title: CreateArchiveRequest
+    CreateLinkRequest:
+      properties:
+        target_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Target Id
+        target_uri:
+          anyOf:
+          - type: string
+            maxLength: 2048
+          - type: 'null'
+          title: Target Uri
+        link_type:
+          type: string
+          maxLength: 200
+          title: Link Type
+        attributes:
+          additionalProperties: true
+          type: object
+          title: Attributes
+          default: {}
+      type: object
+      required:
+      - link_type
+      title: CreateLinkRequest
+    CreatePatRequest:
+      properties:
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Name
+      type: object
+      required:
+      - name
+      title: CreatePatRequest
+    CreatePromptRuleRequest:
+      properties:
+        space_id:
+          type: string
+          maxLength: 200
+          title: Space Id
+        name:
+          type: string
+          maxLength: 500
+          title: Name
+        rule_type:
+          type: string
+          maxLength: 200
+          title: Rule Type
+          default: alarm
+        condition_type:
+          type: string
+          maxLength: 200
+          title: Condition Type
+        threshold_secs:
+          type: integer
+          title: Threshold Secs
+        target_actor_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Target Actor Id
+        target_role:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Target Role
+        prompt_text:
+          type: string
+          maxLength: 65536
+          title: Prompt Text
+        cooldown_secs:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cooldown Secs
+      type: object
+      required:
+      - space_id
+      - name
+      - condition_type
+      - threshold_secs
+      - prompt_text
+      title: CreatePromptRuleRequest
+    CreateSpaceRequest:
+      properties:
+        space_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Space Id
+        description:
+          type: string
+          maxLength: 65536
+          title: Description
+          default: ''
+        links:
+          items:
+            type: string
+          type: array
+          title: Links
+          default: []
+      type: object
+      title: CreateSpaceRequest
+    CreateThreadRequest:
+      properties:
+        parent_event_id:
+          type: string
+          maxLength: 200
+          title: Parent Event Id
+        subject:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Subject
+      type: object
+      required:
+      - parent_event_id
+      title: CreateThreadRequest
+    CreateTimerRequest:
+      properties:
+        tool_name:
+          type: string
+          maxLength: 200
+          title: Tool Name
+        tool_args:
+          additionalProperties: true
+          type: object
+          title: Tool Args
+          default: {}
+        timer_type:
+          type: string
+          maxLength: 200
+          title: Timer Type
+        duration_secs:
+          type: integer
+          title: Duration Secs
+      type: object
+      required:
+      - tool_name
+      - timer_type
+      - duration_secs
+      title: CreateTimerRequest
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    JoinSpaceRequest:
+      properties:
+        participant_id:
+          type: string
+          maxLength: 200
+          title: Participant Id
+        name:
+          type: string
+          maxLength: 500
+          title: Name
+        participant_type:
+          type: string
+          maxLength: 200
+          title: Participant Type
+          default: human
+        agent_adapter:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Agent Adapter
+      type: object
+      required:
+      - participant_id
+      - name
+      title: JoinSpaceRequest
+    PostResponseRequest:
+      properties:
+        agent_id:
+          type: string
+          maxLength: 200
+          title: Agent Id
+        agent_name:
+          type: string
+          maxLength: 500
+          title: Agent Name
+        text:
+          type: string
+          maxLength: 65536
+          title: Text
+        parent_event_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Parent Event Id
+        thread_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Thread Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - agent_id
+      - agent_name
+      - text
+      title: PostResponseRequest
+    ProposeDecisionRequest:
+      properties:
+        proposed_by:
+          type: string
+          maxLength: 200
+          title: Proposed By
+        text:
+          type: string
+          maxLength: 65536
+          title: Text
+        question_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Question Id
+      type: object
+      required:
+      - proposed_by
+      - text
+      title: ProposeDecisionRequest
+    RedeemInviteRequest:
+      properties:
+        code:
+          type: string
+          maxLength: 200
+          title: Code
+        display_name:
+          type: string
+          maxLength: 500
+          title: Display Name
+        email:
+          type: string
+          maxLength: 200
+          title: Email
+      type: object
+      required:
+      - code
+      - display_name
+      - email
+      title: RedeemInviteRequest
+    RegisterActorRequest:
+      properties:
+        display_name:
+          type: string
+          maxLength: 500
+          title: Display Name
+        actor_type:
+          type: string
+          maxLength: 200
+          title: Actor Type
+          default: human
+        email:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Email
+        agent_profile:
+          anyOf:
+          - type: string
+            maxLength: 65536
+          - type: 'null'
+          title: Agent Profile
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - display_name
+      title: RegisterActorRequest
+    ResolveDecisionRequest:
+      properties:
+        resolved_by:
+          type: string
+          maxLength: 200
+          title: Resolved By
+        resolution:
+          type: string
+          maxLength: 65536
+          title: Resolution
+        status:
+          type: string
+          maxLength: 200
+          title: Status
+          default: resolved
+      type: object
+      required:
+      - resolved_by
+      - resolution
+      title: ResolveDecisionRequest
+    SetFocusRequest:
+      properties:
+        actor_ids:
+          items:
+            type: string
+          type: array
+          title: Actor Ids
+        space_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Space Id
+      type: object
+      required:
+      - actor_ids
+      title: SetFocusRequest
+    UpdateActorRequest:
+      properties:
+        display_name:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Display Name
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        focus_space_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Focus Space Id
+      type: object
+      title: UpdateActorRequest
+    UpdateParticipantStatusRequest:
+      properties:
+        status:
+          type: string
+          maxLength: 200
+          title: Status
+      type: object
+      required:
+      - status
+      title: UpdateParticipantStatusRequest
+    UpdatePromptRuleRequest:
+      properties:
+        enabled:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Enabled
+        threshold_secs:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Threshold Secs
+        prompt_text:
+          anyOf:
+          - type: string
+            maxLength: 65536
+          - type: 'null'
+          title: Prompt Text
+        cooldown_secs:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cooldown Secs
+        target_actor_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Target Actor Id
+        target_role:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Target Role
+      type: object
+      title: UpdatePromptRuleRequest
+    UpdateQuestionRequest:
+      properties:
+        status:
+          type: string
+          maxLength: 200
+          title: Status
+      type: object
+      required:
+      - status
+      title: UpdateQuestionRequest
+    UpdateSpaceRequest:
+      properties:
+        description:
+          anyOf:
+          - type: string
+            maxLength: 65536
+          - type: 'null'
+          title: Description
+        status:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Status
+        links:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Links
+      type: object
+      title: UpdateSpaceRequest
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

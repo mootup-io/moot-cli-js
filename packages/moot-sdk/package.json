@@ -1,0 +1,48 @@
+{
+  "name": "@mootup/moot-sdk",
+  "version": "0.1.0-rc.0",
+  "description": "Typed HTTP client for the convo (mootup) API, generated from OpenAPI 3.1.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "openapi.yaml",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "generate": "openapi-typescript openapi.yaml -o src/generated/paths.ts",
+    "sync:oas": "node scripts/sync-oas.mjs",
+    "build": "npm run generate && tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.0",
+    "tough-cookie": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/tough-cookie": "^4.0.5",
+    "msw": "^2.4.0",
+    "openapi-typescript": "^7.4.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
