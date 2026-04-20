@@ -1,6 +1,7 @@
 import { loadCredential } from '../credential.js';
 import { loadRefreshToken, deleteOAuthCredential } from '../auth/credentials.js';
 import { revokeRefreshToken } from '../auth/oauth.js';
+import { validateProfile } from '../auth/profile.js';
 
 export interface LogoutOptions {
   profile?: string;
@@ -10,6 +11,7 @@ export interface LogoutOptions {
 
 export async function cmdLogout(opts: LogoutOptions): Promise<void> {
   const profile = opts.profile ?? 'default';
+  validateProfile(profile);
   const cred = loadCredential(profile);
   if (!cred) {
     console.error(`Error: no credential for profile '${profile}'.`);

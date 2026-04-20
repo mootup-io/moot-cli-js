@@ -47,3 +47,18 @@ export {
   mintPkcePair,
   mintState,
 } from './auth/oauth.js';
+export { PROFILE_RE, validateProfile } from './auth/profile.js';
+export {
+  HARNESS_REGISTRY,
+  DEFAULT_HARNESS,
+  RESERVED_BARE_NAMES,
+  classifyHarness,
+  validateFlagMatrix,
+  type HarnessName,
+  type HarnessTopology,
+  type HarnessEntry,
+} from './harness/index.js';
+export { generateClaudeCode } from './harness/claude-code.js';
+export { generateCursorAgent } from './harness/cursor-agent.js';
+export { generateCursorIde } from './harness/cursor-ide.js';
+export { generateSdk } from './harness/sdk.js';

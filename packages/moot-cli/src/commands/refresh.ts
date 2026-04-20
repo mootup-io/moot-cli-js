@@ -5,6 +5,7 @@ import {
   type OAuthCredentialBundle,
 } from '../auth/credentials.js';
 import { refreshAccessToken } from '../auth/oauth.js';
+import { validateProfile } from '../auth/profile.js';
 
 export interface RefreshOptions {
   profile?: string;
@@ -13,6 +14,7 @@ export interface RefreshOptions {
 
 export async function cmdRefresh(opts: RefreshOptions): Promise<void> {
   const profile = opts.profile ?? 'default';
+  validateProfile(profile);
   const cred = loadCredential(profile);
   if (!cred) {
     console.error(`Error: no credential for profile '${profile}'. Run 'mootup init' first.`);

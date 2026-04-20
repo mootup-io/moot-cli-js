@@ -5,6 +5,7 @@ import {
   PAT_PREFIX,
   DEFAULT_API_URL,
 } from '../credential.js';
+import { validateProfile } from '../auth/profile.js';
 
 export interface LoginOptions {
   token?: string;
@@ -28,6 +29,8 @@ async function defaultReadToken(): Promise<string> {
 }
 
 export async function cmdLogin(opts: LoginOptions): Promise<void> {
+  const profile = opts.profile ?? 'default';
+  validateProfile(profile);
   const apiUrl = opts.apiUrl ?? DEFAULT_API_URL;
   const token = opts.token ?? (await (opts.readToken ?? defaultReadToken)());
 
@@ -62,7 +65,7 @@ export async function cmdLogin(opts: LoginOptions): Promise<void> {
       user_id: actor.actor_id,
       credential_type: 'static_token',
     },
-    opts.profile ?? 'default',
+    profile,
   );
   console.log(
     `Authenticated as ${actor.display_name} (${actor.actor_id}) on ${apiUrl}`,

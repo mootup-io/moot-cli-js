@@ -95,6 +95,55 @@ describe('structural invariants', () => {
     expect(init).toContain('refresh_token_ref');
   });
 
+  it('R11 — cross-topology path_written sets are disjoint (inv 6)', async () => {
+    const { HARNESS_REGISTRY } = await import('../src/index.js');
+    const entries = Object.values(HARNESS_REGISTRY);
+    for (const a of entries) {
+      for (const b of entries) {
+        if (a.topology === b.topology) continue;
+        const inter = a.paths_written.filter((p) => b.paths_written.includes(p));
+        expect(inter).toEqual([]);
+      }
+    }
+  });
+
+  it('R11b — HARNESS_REGISTRY has exactly 4 entries (inv 2)', async () => {
+    const { HARNESS_REGISTRY } = await import('../src/index.js');
+    expect(Object.keys(HARNESS_REGISTRY).sort()).toEqual(
+      ['claude-code', 'cursor-agent', 'cursor-ide', 'sdk'].sort(),
+    );
+  });
+
+  it('AH-h inv 10 — PROFILE_RE validation imported in all 4 auth commands', () => {
+    for (const cmd of ['init', 'login', 'logout', 'refresh']) {
+      const src = readFileSync(join(PKG_ROOT, 'src', 'commands', `${cmd}.ts`), 'utf8');
+      expect(src).toContain("from '../auth/profile.js'");
+      expect(src).toMatch(/validateProfile\(|PROFILE_RE/);
+    }
+  });
+
+  it('AH-h inv 7 — cursor-ide writes .gitignore sidecar entry', () => {
+    const src = readFileSync(
+      join(PKG_ROOT, 'src', 'harness', 'cursor-ide.ts'),
+      'utf8',
+    );
+    expect(src).toContain('.gitignore');
+    expect(src).toContain('.cursor/mcp.json');
+  });
+
+  it('AH-h inv 9 — init.ts dispatches on harness topology via devcontainerTeamFlow / hostSideSoloFlow', () => {
+    const init = readFileSync(join(PKG_ROOT, 'src', 'commands', 'init.ts'), 'utf8');
+    expect(init).toContain('devcontainerTeamFlow');
+    expect(init).toContain('hostSideSoloFlow');
+    expect(init).toContain('/api/personal-access-tokens');
+  });
+
+  it('AH-h bin.ts registers --harness + --show-token on init', () => {
+    const bin = readFileSync(join(PKG_ROOT, 'src', 'bin.ts'), 'utf8');
+    expect(bin).toContain("'--harness <name>'");
+    expect(bin).toContain("'--show-token'");
+  });
+
   it('dist/bin.js starts with shebang and has executable bit (T14)', () => {
     const binPath = join(PKG_ROOT, 'dist', 'bin.js');
     // T14 runs only after build — skip gracefully if dist/ doesn't exist

@@ -27,12 +27,18 @@ program
 
 program
   .command('init')
-  .description('Authenticate (OAuth), select archetype, install team, write .moot/actors.json')
+  .description('Authenticate (OAuth), select harness + archetype, install team, write .moot/actors.json')
   .option('--force', 'Rotate keys for already-keyed agents (destructive)', false)
   .option('--yes', 'Skip all confirmation prompts', false)
   .option('--api-url <url>', 'Moot API URL (overrides stored credential)')
   .option('--profile <name>', 'Named profile (default "default")')
   .option('--archetype <id>', 'Archetype to install (skips prompt)')
+  .option(
+    '--harness <name>',
+    'Harness integration (claude-code, cursor-agent, cursor-ide, sdk)',
+    'claude-code',
+  )
+  .option('--show-token', 'For --harness sdk, print the full PAT plaintext', false)
   .action((opts) => cmdInit(opts));
 
 program
