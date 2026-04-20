@@ -9,9 +9,9 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "npm run -ws --if-present build",
-    "test": "npm run -ws --if-present test",
-    "lint": "npm run -ws --if-present lint",
+    "build": "npm run build -w @mootup/moot-sdk && npm run build -w @mootup/moot-templates && npm run build -w @mootup/moot-cli",
+    "test": "npm run test -w @mootup/moot-sdk && npm run test -w @mootup/moot-templates && npm run test -w @mootup/moot-cli",
+    "lint": "npm run lint -w @mootup/moot-sdk && npm run lint -w @mootup/moot-templates && npm run lint -w @mootup/moot-cli",
     "sync:oas": "npm run -w @mootup/moot-sdk sync:oas",
     "sync:templates": "npm run -w @mootup/moot-templates sync:templates"
   },
