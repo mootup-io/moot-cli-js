@@ -7,6 +7,8 @@ import { cmdDown } from './commands/down.js';
 import { cmdStatus } from './commands/status.js';
 import { cmdAttach } from './commands/attach.js';
 import { cmdCompact } from './commands/compact.js';
+import { cmdLogout } from './commands/logout.js';
+import { cmdRefresh } from './commands/refresh.js';
 
 const program = new Command();
 
@@ -20,15 +22,31 @@ program
   .description('Authenticate against mootup.io and store credential')
   .option('--token <pat>', 'Personal access token (prompts if omitted)')
   .option('--api-url <url>', 'Moot API URL', 'https://mootup.io')
+  .option('--profile <name>', 'Named profile (default "default")')
   .action((opts) => cmdLogin(opts));
 
 program
   .command('init')
-  .description('Rotate actor keys, write .moot/actors.json, install .devcontainer/')
+  .description('Authenticate (OAuth), select archetype, install team, write .moot/actors.json')
   .option('--force', 'Rotate keys for already-keyed agents (destructive)', false)
   .option('--yes', 'Skip all confirmation prompts', false)
   .option('--api-url <url>', 'Moot API URL (overrides stored credential)')
+  .option('--profile <name>', 'Named profile (default "default")')
+  .option('--archetype <id>', 'Archetype to install (skips prompt)')
   .action((opts) => cmdInit(opts));
+
+program
+  .command('logout')
+  .description('Revoke OAuth installation and clear local credential')
+  .option('--profile <name>', 'Named profile (default "default")')
+  .option('--all', 'Revoke all installations (alias for logout; multi-install deferred)', false)
+  .action((opts) => cmdLogout(opts));
+
+program
+  .command('refresh')
+  .description('Refresh the stored OAuth access token')
+  .option('--profile <name>', 'Named profile (default "default")')
+  .action((opts) => cmdRefresh(opts));
 
 program
   .command('up')

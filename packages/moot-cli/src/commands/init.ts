@@ -7,18 +7,43 @@ import {
   readdirSync,
   statSync,
 } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { createMootupClient, type MootupClient } from '@mootup/moot-sdk';
 import { getTemplatesDir } from '@mootup/moot-templates';
-import { loadCredential } from '../credential.js';
+import { loadCredential, type Credential } from '../credential.js';
+import {
+  storeOAuthCredential,
+  loadRefreshToken,
+  type OAuthCredentialBundle,
+} from '../auth/credentials.js';
+import {
+  runBrowserFlow,
+  refreshAccessToken,
+  generateIdempotencyKey,
+  shouldUseBrowser,
+} from '../auth/oauth.js';
+import {
+  ARCHETYPE_CATALOG,
+  DEFAULT_ARCHETYPE,
+  findArchetype,
+  promptArchetype,
+  type ArchetypeEntry,
+} from '../auth/archetypes.js';
+
+const PROFILE_RE = /^[a-z0-9_-]+$/;
 
 export interface InitOptions {
   force?: boolean;
   yes?: boolean;
   apiUrl?: string;
   cwd?: string;
+  profile?: string;
+  archetype?: string;
   fetch?: typeof globalThis.fetch;
+  openBrowser?: (url: string) => Promise<void>;
+  waitForCallback?: (expectedState: string) => Promise<string>;
   confirm?: (prompt: string) => Promise<boolean>;
+  promptArchetype?: (q: string) => Promise<string>;
 }
 
 interface Agent {
@@ -41,6 +66,10 @@ export async function cmdInit(opts: InitOptions): Promise<void> {
   const force = opts.force ?? false;
   const yes = opts.yes ?? false;
   const confirm = opts.confirm ?? defaultConfirm;
+  const profile = opts.profile ?? 'default';
+  if (!PROFILE_RE.test(profile)) {
+    throw new Error(`invalid profile name '${profile}' (must match ${PROFILE_RE})`);
+  }
 
   if (!existsSync(join(cwd, '.git'))) {
     console.warn(
@@ -48,6 +77,39 @@ export async function cmdInit(opts: InitOptions): Promise<void> {
       '.moot/ entries will not be versioned.',
     );
   }
+
+  const existing = loadCredential(profile);
+
+  const isOAuth = existing?.credential_type === 'oauth' || Boolean(existing?.refresh_token_ref);
+  const isStaticToken = Boolean(existing) && !isOAuth;
+
+  if (!existing) {
+    await runOAuthFlowAndStore(profile, opts);
+  } else if (isOAuth) {
+    await maybeRefreshAccessToken(profile, existing!, opts);
+  }
+
+  const credAfter = loadCredential(profile);
+  if (!credAfter) {
+    throw new Error('credential missing after authentication');
+  }
+
+  const apiUrl = opts.apiUrl ?? credAfter.api_url;
+
+  if (isStaticToken && !opts.archetype) {
+    await legacyKeylessFlow({
+      cwd,
+      credential: credAfter,
+      apiUrl,
+      force,
+      yes,
+      confirm,
+      ...(opts.fetch ? { fetch: opts.fetch } : {}),
+    });
+    return;
+  }
+
+  const archetype = await resolveArchetype(opts);
 
   const actorsPath = join(cwd, '.moot', 'actors.json');
   if (existsSync(actorsPath) && !force) {
@@ -58,23 +120,183 @@ export async function cmdInit(opts: InitOptions): Promise<void> {
     throw new Error('actors.json already exists (use --force)');
   }
 
-  const cred = loadCredential();
-  if (!cred) {
-    console.error("Error: not logged in. Run 'mootup login' first.");
-    throw new Error('not logged in');
+  const fetchImpl = opts.fetch ?? globalThis.fetch;
+  const idempotencyKey = generateIdempotencyKey();
+
+  console.log(`Using profile '${profile}' (authenticated on ${apiUrl})`);
+  console.log(`Installing archetype ${archetype.id}@${archetype.version}...`);
+
+  const res = await fetchImpl(`${apiUrl}/api/teams/install`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${credAfter.token}`,
+      'Idempotency-Key': idempotencyKey,
+    },
+    body: JSON.stringify({
+      archetype_id: archetype.id,
+      archetype_version: archetype.version,
+    }),
+  });
+
+  if (res.status === 401) {
+    const body = await res.text();
+    if (body.includes('revoked_installation')) {
+      console.error(
+        `Installation ${credAfter.installation_id ?? ''} has been revoked. ` +
+        `Run 'mootup init --profile ${profile}' again to reinstall.`,
+      );
+    } else {
+      console.error('Authorization failed. Run `mootup init` again to re-authenticate.');
+    }
+    throw new Error(`install failed (${res.status})`);
+  }
+  if (res.status !== 200 && res.status !== 201) {
+    const body = await res.text();
+    throw new Error(`/api/teams/install failed (${res.status}): ${body}`);
   }
 
-  const apiUrl = opts.apiUrl ?? cred.api_url;
-  const token = cred.token;
+  const installResp = (await res.json()) as {
+    installation_id: string;
+    team_id: string;
+    space_id: string;
+    space_name?: string;
+    actors: Record<string, { actor_id: string; api_key: string; display_name: string }>;
+  };
+
+  if (installResp.installation_id) {
+    const updated: Credential = { ...credAfter, installation_id: installResp.installation_id };
+    const { storeCredential } = await import('../credential.js');
+    storeCredential(updated, profile);
+  }
+
+  writeActorsJson({
+    cwd,
+    spaceId: installResp.space_id,
+    spaceName: installResp.space_name ?? installResp.space_id,
+    apiUrl,
+    adopted: installResp.actors,
+  });
+  console.log(
+    `Wrote .moot/actors.json        (${Object.keys(installResp.actors).length} agents, chmod 600)`,
+  );
+
+  installDevcontainer({ cwd, overwrite: false });
+
+  console.log("\nDone. Run 'mootup up' to bring your team online.");
+}
+
+async function runOAuthFlowAndStore(profile: string, opts: InitOptions): Promise<void> {
+  if (!shouldUseBrowser()) {
+    throw new Error(
+      'Headless environment detected (no DISPLAY/WAYLAND_DISPLAY); browser OAuth flow unavailable. ' +
+      "Install on a host with browser access, or use 'mootup login --token <PAT>' to fall back to a personal access token.",
+    );
+  }
+  const apiUrl = opts.apiUrl ?? 'https://mootup.io';
+  const flow = await runBrowserFlow({
+    apiUrl,
+    ...(opts.fetch ? { fetchImpl: opts.fetch } : {}),
+    ...(opts.openBrowser ? { openImpl: opts.openBrowser } : {}),
+    ...(opts.waitForCallback ? { waitForCallbackImpl: opts.waitForCallback } : {}),
+  });
+  const userId = await fetchUserId(apiUrl, flow.access_token, opts.fetch);
+  const bundle: OAuthCredentialBundle = {
+    api_url: apiUrl,
+    user_id: userId,
+    access_token: flow.access_token,
+    refresh_token: flow.refresh_token,
+    access_token_expires_at: flow.access_token_expires_at,
+  };
+  await storeOAuthCredential(profile, bundle);
+}
+
+async function maybeRefreshAccessToken(
+  profile: string,
+  cred: Credential,
+  opts: InitOptions,
+): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const expiresAt = cred.access_token_expires_at ?? 0;
+  if (expiresAt > now + 60) return;
+  const refreshToken = await loadRefreshToken(profile);
+  if (!refreshToken) return;
+  const result = await refreshAccessToken({
+    apiUrl: cred.api_url,
+    refreshToken,
+    ...(opts.fetch ? { fetchImpl: opts.fetch } : {}),
+  });
+  const bundle: OAuthCredentialBundle = {
+    api_url: cred.api_url,
+    user_id: cred.user_id,
+    access_token: result.access_token,
+    refresh_token: result.refresh_token,
+    access_token_expires_at: result.access_token_expires_at,
+  };
+  if (cred.installation_id !== undefined) bundle.installation_id = cred.installation_id;
+  await storeOAuthCredential(profile, bundle);
+}
+
+async function fetchUserId(
+  apiUrl: string,
+  token: string,
+  fetchOverride?: typeof globalThis.fetch,
+): Promise<string> {
+  const fetchImpl = fetchOverride ?? globalThis.fetch;
+  const res = await fetchImpl(`${apiUrl}/api/actors/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.status !== 200) {
+    throw new Error(`/api/actors/me lookup failed (${res.status})`);
+  }
+  const body = (await res.json()) as { actor_id?: string };
+  if (!body.actor_id) throw new Error('/api/actors/me missing actor_id');
+  return body.actor_id;
+}
+
+async function resolveArchetype(opts: InitOptions): Promise<ArchetypeEntry> {
+  if (opts.archetype) {
+    const found = findArchetype(opts.archetype);
+    if (!found) {
+      const ids = ARCHETYPE_CATALOG.map((a) => a.id).join(', ');
+      throw new Error(`Unknown archetype '${opts.archetype}'. Known: ${ids}`);
+    }
+    return found;
+  }
+  if (opts.yes) return findArchetype(DEFAULT_ARCHETYPE)!;
+  return promptArchetype(opts.promptArchetype);
+}
+
+interface LegacyArgs {
+  cwd: string;
+  credential: Credential;
+  apiUrl: string;
+  force: boolean;
+  yes: boolean;
+  confirm: (prompt: string) => Promise<boolean>;
+  fetch?: typeof globalThis.fetch;
+}
+
+async function legacyKeylessFlow(args: LegacyArgs): Promise<void> {
+  const { cwd, credential, apiUrl, force, yes, confirm } = args;
+  const actorsPath = join(cwd, '.moot', 'actors.json');
+  if (existsSync(actorsPath) && !force) {
+    console.error(
+      `Error: ${actorsPath} already exists.\n` +
+      `Use 'mootup init --force' to rotate keys (invalidates the current set).`,
+    );
+    throw new Error('actors.json already exists (use --force)');
+  }
+
+  const token = credential.token;
   const client = createMootupClient({
     baseUrl: apiUrl,
     apiKey: token,
-    ...(opts.fetch ? { fetch: opts.fetch } : {}),
+    ...(args.fetch ? { fetch: args.fetch } : {}),
   });
 
   console.log(`Using profile default (authenticated on ${apiUrl})`);
   const { spaceId } = await fetchActorAndSpace(client);
-  const spaceName = spaceId;
   console.log(`Fetched your default space: ${spaceId}`);
 
   const keyless = await fetchKeylessAgents(client, force);
@@ -115,7 +337,7 @@ export async function cmdInit(opts: InitOptions): Promise<void> {
   writeActorsJson({
     cwd,
     spaceId,
-    spaceName,
+    spaceName: spaceId,
     apiUrl,
     adopted,
   });

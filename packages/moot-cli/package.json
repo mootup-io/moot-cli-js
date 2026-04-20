@@ -34,6 +34,9 @@
     "@mootup/moot-templates": "*",
     "commander": "^12.1.0"
   },
+  "optionalDependencies": {
+    "keytar": "^7.9.0"
+  },
   "devDependencies": {
     "@types/node": "^20.14.0",
     "msw": "^2.4.0",

@@ -7,10 +7,16 @@ export const CRED_FILE = join(CRED_DIR, 'credentials.json');
 export const PAT_PREFIX = 'mootup_pat_';
 export const DEFAULT_API_URL = 'https://mootup.io';
 
+export type CredentialType = 'static_token' | 'oauth';
+
 export interface Credential {
   api_url: string;
   token: string;
   user_id: string;
+  credential_type?: CredentialType;
+  refresh_token_ref?: string;
+  access_token_expires_at?: number;
+  installation_id?: string;
 }
 
 export type CredentialsFile = Record<string, Credential>;
@@ -35,7 +41,16 @@ export function loadCredential(profile = 'default'): Credential | null {
   ) {
     return null;
   }
-  return { api_url: c.api_url, token: c.token, user_id: c.user_id };
+  const out: Credential = { api_url: c.api_url, token: c.token, user_id: c.user_id };
+  if (c.credential_type === 'oauth' || c.credential_type === 'static_token') {
+    out.credential_type = c.credential_type;
+  }
+  if (typeof c.refresh_token_ref === 'string') out.refresh_token_ref = c.refresh_token_ref;
+  if (typeof c.access_token_expires_at === 'number') {
+    out.access_token_expires_at = c.access_token_expires_at;
+  }
+  if (typeof c.installation_id === 'string') out.installation_id = c.installation_id;
+  return out;
 }
 
 export function storeCredential(
@@ -60,6 +75,23 @@ export function storeCredential(
     }
   }
   existing[profile] = cred;
+  writeFileSync(CRED_FILE, JSON.stringify(existing, null, 2) + '\n');
+  chmodSync(CRED_FILE, 0o600);
+}
+
+export function deleteCredential(profile = 'default'): void {
+  if (!existsSync(CRED_FILE)) return;
+  let existing: CredentialsFile = {};
+  try {
+    const raw = readFileSync(CRED_FILE, 'utf8');
+    const parsed = JSON.parse(raw) as unknown;
+    if (parsed && typeof parsed === 'object') {
+      existing = parsed as CredentialsFile;
+    }
+  } catch {
+    return;
+  }
+  delete existing[profile];
   writeFileSync(CRED_FILE, JSON.stringify(existing, null, 2) + '\n');
   chmodSync(CRED_FILE, 0o600);
 }

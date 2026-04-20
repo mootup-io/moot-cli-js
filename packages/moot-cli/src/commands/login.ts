@@ -9,6 +9,7 @@ import {
 export interface LoginOptions {
   token?: string;
   apiUrl?: string;
+  profile?: string;
   fetch?: typeof globalThis.fetch;
   readToken?: () => Promise<string>;
 }
@@ -54,11 +55,15 @@ export async function cmdLogin(opts: LoginOptions): Promise<void> {
     throw new Error('unexpected /api/actors/me response shape');
   }
 
-  storeCredential({
-    api_url: apiUrl,
-    token,
-    user_id: actor.actor_id,
-  });
+  storeCredential(
+    {
+      api_url: apiUrl,
+      token,
+      user_id: actor.actor_id,
+      credential_type: 'static_token',
+    },
+    opts.profile ?? 'default',
+  );
   console.log(
     `Authenticated as ${actor.display_name} (${actor.actor_id}) on ${apiUrl}`,
   );

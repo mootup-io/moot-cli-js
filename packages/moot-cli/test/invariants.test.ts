@@ -43,6 +43,58 @@ describe('structural invariants', () => {
     expect(joined).not.toMatch(/from ['"]node:https['"]/);
   });
 
+  it('R14a — inv 8: --profile registered on 4 auth-adjacent commands in bin.ts', () => {
+    const bin = readFileSync(join(PKG_ROOT, 'src', 'bin.ts'), 'utf8');
+    const profileMatches = bin.match(/\.option\(['"]--profile <name>['"]/g) ?? [];
+    expect(profileMatches.length).toBe(4);
+    for (const cmd of ['login', 'init', 'logout', 'refresh']) {
+      expect(bin).toContain(`.command('${cmd}')`);
+    }
+  });
+
+  it('R14b — inv 10: keytar calls in try/catch with file-based-storage fallback message', () => {
+    const creds = readFileSync(join(PKG_ROOT, 'src', 'auth', 'credentials.ts'), 'utf8');
+    expect(creds).toContain('try {');
+    expect(creds).toContain('catch');
+    expect(creds).toContain('file-based storage at');
+    expect(creds).toContain('keychain unavailable');
+  });
+
+  it('R14c — inv 11: storeOAuthCredential write payload excludes raw refresh_token (file never holds refresh-token bytes)', () => {
+    const creds = readFileSync(join(PKG_ROOT, 'src', 'auth', 'credentials.ts'), 'utf8');
+    // The Credential object passed to storeCredential must NOT include a refresh_token field.
+    // We look for the object literal construction and verify it carries refresh_token_ref, not refresh_token.
+    const storeFnMatch = creds.match(/storeOAuthCredential[\s\S]*?storeCredential\(cred, profile\)/);
+    expect(storeFnMatch).toBeTruthy();
+    const body = storeFnMatch![0];
+    expect(body).toContain('refresh_token_ref');
+    // The only use of `refresh_token` in this function body should be on the IN-MEMORY bundle (creds arg)
+    // or the keychain setPassword call — NOT in the `cred: Credential` object that goes to the file.
+    const credObjectLiteral = body.match(/const cred: Credential = \{[\s\S]*?\};/);
+    expect(credObjectLiteral).toBeTruthy();
+    expect(credObjectLiteral![0]).not.toContain('refresh_token:');
+    expect(credObjectLiteral![0]).not.toMatch(/\brefresh_token\b[^_]/);
+  });
+
+  it('R14d — inv 12: --profile threaded into init/login/logout/refresh commands', () => {
+    for (const cmd of ['init', 'login', 'logout', 'refresh']) {
+      const src = readFileSync(join(PKG_ROOT, 'src', 'commands', `${cmd}.ts`), 'utf8');
+      expect(src).toContain('profile');
+    }
+  });
+
+  it('R14e — inv 3: install POST always sets Idempotency-Key header', () => {
+    const init = readFileSync(join(PKG_ROOT, 'src', 'commands', 'init.ts'), 'utf8');
+    expect(init).toContain("'Idempotency-Key'");
+    expect(init).toContain('generateIdempotencyKey');
+  });
+
+  it('R14f — inv 9: init dispatches on credential_type + refresh_token_ref presence', () => {
+    const init = readFileSync(join(PKG_ROOT, 'src', 'commands', 'init.ts'), 'utf8');
+    expect(init).toMatch(/credential_type === ['"]oauth['"]/);
+    expect(init).toContain('refresh_token_ref');
+  });
+
   it('dist/bin.js starts with shebang and has executable bit (T14)', () => {
     const binPath = join(PKG_ROOT, 'dist', 'bin.js');
     // T14 runs only after build — skip gracefully if dist/ doesn't exist
