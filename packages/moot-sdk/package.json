@@ -1,7 +1,7 @@
 {
   "name": "@mootup/moot-sdk",
   "version": "0.1.0-rc.0",
-  "description": "Typed HTTP client for the convo (mootup) API, generated from OpenAPI 3.1.",
+  "description": "Typed HTTP client AND MCP harness helpers (connectMootup) for the convo (mootup) API. Zero MCP SDK dependency — duck-typed client interface.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,6 +24,7 @@
   "scripts": {
     "generate": "openapi-typescript openapi.yaml -o src/generated/paths.ts",
     "sync:oas": "node scripts/sync-oas.mjs",
+    "sync:contract": "node scripts/sync-contract.mjs",
     "build": "npm run generate && tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",
