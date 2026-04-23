@@ -17,15 +17,10 @@ jobs:
           node-version: '22'
           cache: npm
           registry-url: 'https://registry.npmjs.org'
+      - run: npm install -g npm@latest
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - run: npm publish --access public -w @mootup/moot-sdk
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public -w @mootup/moot-templates
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm publish --access public -w @mootup/moot-cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public --provenance -w @mootup/moot-sdk
+      - run: npm publish --access public --provenance -w @mootup/moot-templates
+      - run: npm publish --access public --provenance -w @mootup/moot-cli
