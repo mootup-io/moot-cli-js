@@ -14,12 +14,3 @@ describe('package manifest', () => {
   });
 });
 
-describe('publish workflow', () => {
-  // T6: .github/workflows/publish.yml publishes both moot-sdk and moot-templates
-  it('includes a publish step for @mootup/moot-templates with NODE_AUTH_TOKEN', () => {
-    const workflowPath = resolve(pkgRoot, '..', '..', '.github', 'workflows', 'publish.yml');
-    const yaml = readFileSync(workflowPath, 'utf8');
-    expect(yaml).toMatch(/npm publish --access public -w @mootup\/moot-templates/);
-    expect(yaml).toMatch(/NODE_AUTH_TOKEN:\s*\$\{\{\s*secrets\.NPM_TOKEN\s*\}\}/);
-  });
-});

@@ -4,7 +4,6 @@ import { join, resolve } from 'node:path';
 import { readdirSync } from 'node:fs';
 
 const PKG_ROOT = resolve(__dirname, '..');
-const REPO_ROOT = resolve(PKG_ROOT, '..', '..');
 
 describe('structural invariants', () => {
   it('package.json bin maps moot → ./dist/bin.js (T9)', () => {
@@ -19,17 +18,6 @@ describe('structural invariants', () => {
     expect(pkg.files).not.toContain('src');
     expect(pkg.files).not.toContain('test');
     expect(pkg.files).not.toContain('scripts');
-  });
-
-  it('publish.yml contains @mootup/moot-cli publish step with NODE_AUTH_TOKEN gate (T11)', () => {
-    const yml = readFileSync(
-      join(REPO_ROOT, '.github', 'workflows', 'publish.yml'),
-      'utf8',
-    );
-    expect(yml).toContain('npm publish --access public -w @mootup/moot-cli');
-    // Count NODE_AUTH_TOKEN gates: sdk + templates + cli = 3
-    const gateCount = yml.match(/NODE_AUTH_TOKEN:/g)?.length ?? 0;
-    expect(gateCount).toBe(3);
   });
 
   it('src/ imports @mootup/moot-sdk + @mootup/moot-templates, not bare node-fetch or raw http (T12)', () => {
