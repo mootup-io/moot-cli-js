@@ -1,6 +1,6 @@
 {
   "name": "@mootup/moot-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Host-side operator CLI for the Moot agent team workflow. Wraps devcontainer launch and delegates in-container work to the Python moot CLI via docker exec.",
   "license": "MIT",
   "type": "module",
