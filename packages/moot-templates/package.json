@@ -3,6 +3,11 @@
   "version": "0.2.0",
   "description": "Canonical project templates (skills, teams, devcontainer, Claude hooks) for @mootup/moot-cli, synced from the mootup Python CLI source.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mootup-io/moot-cli-js.git",
+    "directory": "packages/moot-templates"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

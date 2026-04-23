@@ -3,6 +3,11 @@
   "version": "0.2.0",
   "description": "Typed HTTP client AND MCP harness helpers (connectMootup) for the convo (mootup) API. Zero MCP SDK dependency — duck-typed client interface.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mootup-io/moot-cli-js.git",
+    "directory": "packages/moot-sdk"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
