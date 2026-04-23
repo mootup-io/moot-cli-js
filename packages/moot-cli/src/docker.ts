@@ -139,7 +139,7 @@ export function requireContainerId(
   if (!cid) {
     throw new Error(
       `No running devcontainer found for ${resolve(workspace)}.\n` +
-      `Run 'mootup up' first.`,
+      `Run 'moot up' first.`,
     );
   }
   return cid;

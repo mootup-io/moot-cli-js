@@ -174,7 +174,7 @@ async function devcontainerTeamFlow(args: DevcontainerTeamArgs): Promise<void> {
   if (existsSync(actorsPath) && !args.force) {
     console.error(
       `Error: ${actorsPath} already exists.\n` +
-      `Use 'mootup init --force' to rotate keys (invalidates the current set).`,
+      `Use 'moot init --force' to rotate keys (invalidates the current set).`,
     );
     throw new Error('actors.json already exists (use --force)');
   }
@@ -203,10 +203,10 @@ async function devcontainerTeamFlow(args: DevcontainerTeamArgs): Promise<void> {
     if (body.includes('revoked_installation')) {
       console.error(
         `Installation ${args.credential.installation_id ?? ''} has been revoked. ` +
-        `Run 'mootup init --profile ${args.profile}' again to reinstall.`,
+        `Run 'moot init --profile ${args.profile}' again to reinstall.`,
       );
     } else {
-      console.error('Authorization failed. Run `mootup init` again to re-authenticate.');
+      console.error('Authorization failed. Run `moot init` again to re-authenticate.');
     }
     throw new Error(`install failed (${res.status})`);
   }
@@ -240,7 +240,7 @@ async function devcontainerTeamFlow(args: DevcontainerTeamArgs): Promise<void> {
     await generateClaudeCode(generatorArgs);
   }
 
-  console.log("\nDone. Run 'mootup up' to bring your team online.");
+  console.log("\nDone. Run 'moot up' to bring your team online.");
 }
 
 interface HostSideSoloArgs {
@@ -300,7 +300,7 @@ async function runOAuthFlowAndStore(profile: string, opts: InitOptions): Promise
   if (!shouldUseBrowser()) {
     throw new Error(
       'Headless environment detected (no DISPLAY/WAYLAND_DISPLAY); browser OAuth flow unavailable. ' +
-      "Install on a host with browser access, or use 'mootup login --token <PAT>' to fall back to a personal access token.",
+      "Install on a host with browser access, or use 'moot login --token <PAT>' to fall back to a personal access token.",
     );
   }
   const apiUrl = opts.apiUrl ?? 'https://mootup.io';
@@ -399,7 +399,7 @@ async function legacyKeylessFlow(args: LegacyArgs): Promise<void> {
   if (existsSync(actorsPath) && !force) {
     console.error(
       `Error: ${actorsPath} already exists.\n` +
-      `Use 'mootup init --force' to rotate keys (invalidates the current set).`,
+      `Use 'moot init --force' to rotate keys (invalidates the current set).`,
     );
     throw new Error('actors.json already exists (use --force)');
   }
@@ -422,8 +422,8 @@ async function legacyKeylessFlow(args: LegacyArgs): Promise<void> {
     } else {
       console.error(
         'Error: no keyless agents found in your default space.\n' +
-        "If you've run 'mootup init' before on this space, use " +
-        "'mootup init --force' to rotate the existing keys.",
+        "If you've run 'moot init' before on this space, use " +
+        "'moot init --force' to rotate the existing keys.",
       );
     }
     throw new Error('no agents to adopt');
@@ -463,7 +463,7 @@ async function legacyKeylessFlow(args: LegacyArgs): Promise<void> {
 
   installDevcontainer({ cwd, templateName: 'devcontainer', overwrite: false });
 
-  console.log("\nDone. Run 'mootup up' to bring your team online.");
+  console.log("\nDone. Run 'moot up' to bring your team online.");
 }
 
 interface ActorAndSpace {
@@ -476,7 +476,7 @@ async function fetchActorAndSpace(client: MootupClient): Promise<ActorAndSpace> 
   if (response.status !== 200) {
     throw new Error(
       `Could not fetch your account (${response.status}). ` +
-      `Your credential may have expired — run 'mootup login' again.`,
+      `Your credential may have expired — run 'moot login' again.`,
     );
   }
   const actor = data as Record<string, unknown> | undefined;

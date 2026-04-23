@@ -17,7 +17,7 @@ export async function cmdRefresh(opts: RefreshOptions): Promise<void> {
   validateProfile(profile);
   const cred = loadCredential(profile);
   if (!cred) {
-    console.error(`Error: no credential for profile '${profile}'. Run 'mootup init' first.`);
+    console.error(`Error: no credential for profile '${profile}'. Run 'moot init' first.`);
     throw new Error(`no credential for profile '${profile}'`);
   }
   if (cred.credential_type !== 'oauth') {
@@ -30,7 +30,7 @@ export async function cmdRefresh(opts: RefreshOptions): Promise<void> {
   const refreshToken = await loadRefreshToken(profile);
   if (!refreshToken) {
     console.error(
-      `Error: no refresh token available for profile '${profile}'. Run 'mootup init' again.`,
+      `Error: no refresh token available for profile '${profile}'. Run 'moot init' again.`,
     );
     throw new Error('no refresh token');
   }
@@ -47,8 +47,8 @@ export async function cmdRefresh(opts: RefreshOptions): Promise<void> {
     if (msg.includes('invalid_grant') || msg.includes('(400') || msg.includes('(401')) {
       console.error(
         `Installation ${cred.installation_id ?? ''} has been revoked. ` +
-        `Run 'mootup init --profile ${profile}' to reinstall, ` +
-        `or 'mootup logout --profile ${profile}' to clean up local state.`,
+        `Run 'moot init --profile ${profile}' to reinstall, ` +
+        `or 'moot logout --profile ${profile}' to clean up local state.`,
       );
       throw new Error('refresh rejected (revoked)');
     }

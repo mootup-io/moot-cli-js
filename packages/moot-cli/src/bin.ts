@@ -13,9 +13,9 @@ import { cmdRefresh } from './commands/refresh.js';
 const program = new Command();
 
 program
-  .name('mootup')
+  .name('moot')
   .description('Host-side operator CLI for the Moot agent team workflow')
-  .version('0.1.0-rc.0');
+  .version('0.1.0');
 
 program
   .command('login')

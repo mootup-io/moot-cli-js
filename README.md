@@ -34,7 +34,7 @@ npm run lint      # runs `lint` script across all workspaces
 npm run sync:oas  # refresh vendored OpenAPI spec from convo repo
 ```
 
-Requires Node 20 LTS.
+Requires Node 18+.
 
 ## OpenAPI source of truth
 

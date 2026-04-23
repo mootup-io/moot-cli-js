@@ -19,7 +19,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "generate": "openapi-typescript openapi.yaml -o src/generated/paths.ts",

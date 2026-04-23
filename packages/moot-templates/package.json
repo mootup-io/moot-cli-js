@@ -18,7 +18,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "sync:templates": "node scripts/sync-templates.mjs",

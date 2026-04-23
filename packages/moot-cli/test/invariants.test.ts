@@ -7,9 +7,9 @@ const PKG_ROOT = resolve(__dirname, '..');
 const REPO_ROOT = resolve(PKG_ROOT, '..', '..');
 
 describe('structural invariants', () => {
-  it('package.json bin maps mootup → ./dist/bin.js (T9)', () => {
+  it('package.json bin maps moot → ./dist/bin.js (T9)', () => {
     const pkg = JSON.parse(readFileSync(join(PKG_ROOT, 'package.json'), 'utf8'));
-    expect(pkg.bin).toEqual({ mootup: './dist/bin.js' });
+    expect(pkg.bin).toEqual({ moot: './dist/bin.js' });
   });
 
   it('package.json files includes dist and README.md, excludes src/test/scripts (T10)', () => {

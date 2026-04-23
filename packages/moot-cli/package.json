@@ -1,13 +1,13 @@
 {
   "name": "@mootup/moot-cli",
-  "version": "0.1.0-rc.0",
+  "version": "0.1.0",
   "description": "Host-side operator CLI for the Moot agent team workflow. Wraps devcontainer launch and delegates in-container work to the Python moot CLI via docker exec.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "mootup": "./dist/bin.js"
+    "moot": "./dist/bin.js"
   },
   "exports": {
     ".": {
@@ -20,7 +20,7 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && chmod +x dist/bin.js",
