@@ -145,6 +145,34 @@ describe('structural invariants', () => {
   });
 });
 
+describe('TMPL-1 default archetype', () => {
+  it('R1 — loop-6 description matches D-TMPL1-8 literal', async () => {
+    const { findArchetype } = await import('../src/auth/archetypes.js');
+    const loop6 = findArchetype('mootup/loop-6');
+    expect(loop6?.description).toBe(
+      'Recommended default — core pipeline with librarian + dedicated leader',
+    );
+  });
+
+  it('R2 — DEFAULT_ARCHETYPE is mootup/loop-6', async () => {
+    const { DEFAULT_ARCHETYPE } = await import('../src/auth/archetypes.js');
+    expect(DEFAULT_ARCHETYPE).toBe('mootup/loop-6');
+  });
+
+  it('R7 — loop-4 variants remain registered in ARCHETYPE_CATALOG', async () => {
+    const { ARCHETYPE_CATALOG } = await import('../src/auth/archetypes.js');
+    const ids = ARCHETYPE_CATALOG.map((a) => a.id);
+    for (const id of [
+      'mootup/loop-4',
+      'mootup/loop-4-observer',
+      'mootup/loop-4-parallel',
+      'mootup/loop-4-split-leader',
+    ]) {
+      expect(ids).toContain(id);
+    }
+  });
+});
+
 function collectTs(dir: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {

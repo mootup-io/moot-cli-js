@@ -7,7 +7,7 @@ export interface ArchetypeEntry {
 }
 
 export const ARCHETYPE_CATALOG: readonly ArchetypeEntry[] = [
-  { id: 'mootup/loop-6',              version: '1.0', description: 'Full pipeline (product/leader/spec/impl/qa/librarian)' },
+  { id: 'mootup/loop-6',              version: '1.0', description: 'Recommended default — core pipeline with librarian + dedicated leader' },
   { id: 'mootup/loop-4',              version: '1.0', description: 'Core pipeline (product/spec/impl/qa)' },
   { id: 'mootup/loop-4-observer',     version: '1.0', description: 'Core + librarian' },
   { id: 'mootup/loop-4-parallel',     version: '1.0', description: 'Core + parallel impl-a/impl-b' },
