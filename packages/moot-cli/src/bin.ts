@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createRequire } from 'node:module';
 import { Command } from 'commander';
 import { cmdLogin } from './commands/login.js';
 import { cmdInit } from './commands/init.js';
@@ -10,12 +11,18 @@ import { cmdCompact } from './commands/compact.js';
 import { cmdLogout } from './commands/logout.js';
 import { cmdRefresh } from './commands/refresh.js';
 
+// Single source of truth: read version from package.json at runtime.
+// `../package.json` resolves from dist/bin.js to the package root post-install;
+// npm always includes package.json in the tarball regardless of `files`.
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json') as { version: string };
+
 const program = new Command();
 
 program
   .name('moot')
   .description('Host-side operator CLI for the Moot agent team workflow')
-  .version('0.1.0');
+  .version(version);
 
 program
   .command('login')
