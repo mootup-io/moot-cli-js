@@ -1,6 +1,6 @@
 {
   "name": "@mootup/moot-templates",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Canonical project templates (skills, teams, devcontainer, Claude hooks) for @mootup/moot-cli, synced from the mootup Python CLI source.",
   "license": "MIT",
   "repository": {
