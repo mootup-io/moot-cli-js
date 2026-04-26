@@ -60,6 +60,46 @@ interface Agent {
   api_key_prefix?: string | null;
 }
 
+/**
+ * SEC-5: exchange a registration ticket for the bound agent's plaintext
+ * api_key. The api_key is consumed internally by the CLI harness (written
+ * to .moot/actors.json at 0600); never echoed to stdout or returned to
+ * Claude Code's tool surface.
+ */
+export async function exchangeRegistrationTicket(
+  apiUrl: string,
+  ticketId: string,
+  fetchImpl: typeof globalThis.fetch = globalThis.fetch,
+): Promise<string> {
+  const res = await fetchImpl(
+    `${apiUrl}/api/registration-tickets/${encodeURIComponent(ticketId)}/exchange`,
+    { method: 'POST' },
+  );
+  if (res.status === 410) {
+    throw new Error(
+      'Registration ticket expired (5-min TTL). Re-run `moot init` to ' +
+        'request a fresh ticket.',
+    );
+  }
+  if (res.status === 409) {
+    throw new Error(
+      'Registration ticket already used. Re-run `moot init` to request a ' +
+        'fresh ticket.',
+    );
+  }
+  if (res.status === 404) {
+    throw new Error('Registration ticket not found.');
+  }
+  if (!res.ok) {
+    throw new Error(`ticket exchange failed (${res.status})`);
+  }
+  const body = (await res.json()) as { api_key?: string };
+  if (typeof body.api_key !== 'string' || body.api_key.length === 0) {
+    throw new Error('ticket exchange response missing api_key');
+  }
+  return body.api_key;
+}
+
 async function defaultConfirm(prompt: string): Promise<boolean> {
   const { createInterface } = await import('node:readline/promises');
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -215,7 +255,12 @@ async function devcontainerTeamFlow(args: DevcontainerTeamArgs): Promise<void> {
     throw new Error(`/api/teams/install failed (${res.status}): ${body}`);
   }
 
-  const installResp = (await res.json()) as InstallResponse;
+  const rawResp = (await res.json()) as Record<string, unknown>;
+
+  // SEC-5: server returns agents[] with registration_ticket_id; CLI exchanges
+  // each ticket for plaintext api_key inside this shell process. Plaintext
+  // never leaves the CLI: written to .moot/actors.json at 0600.
+  const installResp = await synthesizeInstallResponse(rawResp, args.apiUrl, fetchImpl);
 
   if (installResp.installation_id) {
     const updated: Credential = {
@@ -448,7 +493,7 @@ async function legacyKeylessFlow(args: LegacyArgs): Promise<void> {
   }
 
   console.log('\nRotating keys for keyless agents...');
-  const adopted = await rotateKeys(client, keyless, force);
+  const adopted = await rotateKeys(client, keyless, force, apiUrl, args.fetch ?? globalThis.fetch);
 
   writeActorsJson({
     cwd,
@@ -523,6 +568,8 @@ async function rotateKeys(
   client: MootupClient,
   agents: Agent[],
   force: boolean,
+  apiUrl: string,
+  fetchImpl: typeof globalThis.fetch,
 ): Promise<Record<string, { actor_id: string; api_key: string; display_name: string }>> {
   const adopted: Record<string, { actor_id: string; api_key: string; display_name: string }> = {};
   for (const agent of agents) {
@@ -540,7 +587,14 @@ async function rotateKeys(
       );
     }
     const body = (data as Record<string, unknown> | undefined) ?? {};
-    const apiKey = typeof body.api_key === 'string' ? body.api_key : '';
+    // SEC-5: agent rotate-key returns registration_ticket_id; exchange to obtain plaintext.
+    const ticketId = typeof body.registration_ticket_id === 'string' ? body.registration_ticket_id : '';
+    if (!ticketId) {
+      throw new Error(
+        `rotate-key missing registration_ticket_id for ${agent.display_name}`,
+      );
+    }
+    const apiKey = await exchangeRegistrationTicket(apiUrl, ticketId, fetchImpl);
     adopted[roleKey] = {
       actor_id: agent.actor_id,
       api_key: apiKey,
@@ -549,6 +603,71 @@ async function rotateKeys(
     console.log(`  ${agent.display_name.padEnd(16)} ✓`);
   }
   return adopted;
+}
+
+/**
+ * SEC-5: assemble the harness-shaped InstallResponse from the server's
+ * agents[] payload. Each agent's registration_ticket_id is exchanged for a
+ * plaintext api_key inline. Backwards-tolerant of the legacy `actors`
+ * record shape used by older mocks/tests; both paths yield the same
+ * harness-consumable structure.
+ */
+async function synthesizeInstallResponse(
+  raw: Record<string, unknown>,
+  apiUrl: string,
+  fetchImpl: typeof globalThis.fetch,
+): Promise<InstallResponse> {
+  const installation_id = String(raw.installation_id ?? '');
+  const team_id = String(raw.team_id ?? '');
+  const space_id = typeof raw.space_id === 'string' ? raw.space_id : team_id;
+  const space_name = typeof raw.space_name === 'string' ? raw.space_name : undefined;
+
+  const actors: Record<string, { actor_id: string; api_key: string; display_name: string }> = {};
+
+  // SEC-5 path: agents[] with registration_ticket_id.
+  if (Array.isArray(raw.agents)) {
+    for (const item of raw.agents) {
+      if (!item || typeof item !== 'object') continue;
+      const a = item as Record<string, unknown>;
+      const role = typeof a.role === 'string' ? a.role : '';
+      const ticketId = typeof a.registration_ticket_id === 'string' ? a.registration_ticket_id : '';
+      if (!role || !ticketId) {
+        throw new Error(
+          `/api/teams/install agent missing role or registration_ticket_id (server-side schema regression?)`,
+        );
+      }
+      const apiKey = await exchangeRegistrationTicket(apiUrl, ticketId, fetchImpl);
+      actors[role.toLowerCase().replace(/ /g, '_')] = {
+        actor_id: typeof a.agent_id === 'string' ? a.agent_id : '',
+        api_key: apiKey,
+        display_name: typeof a.agent_name === 'string' ? a.agent_name : (typeof a.display_name === 'string' ? a.display_name : ''),
+      };
+    }
+  }
+
+  // Legacy path: actors record (kept for older mocks; harmless when agents[] is present).
+  if (Object.keys(actors).length === 0 && raw.actors && typeof raw.actors === 'object') {
+    for (const [role, value] of Object.entries(raw.actors as Record<string, unknown>)) {
+      if (!value || typeof value !== 'object') continue;
+      const v = value as Record<string, unknown>;
+      const apiKey = typeof v.api_key === 'string' ? v.api_key : '';
+      if (!apiKey) continue;
+      actors[role.toLowerCase().replace(/ /g, '_')] = {
+        actor_id: typeof v.actor_id === 'string' ? v.actor_id : '',
+        api_key: apiKey,
+        display_name: typeof v.display_name === 'string' ? v.display_name : '',
+      };
+    }
+  }
+
+  const out: InstallResponse = {
+    installation_id,
+    team_id,
+    space_id,
+    actors,
+  };
+  if (space_name !== undefined) out.space_name = space_name;
+  return out;
 }
 
 // Inv 10: keep PROFILE_RE referenced in this module for grep-backed tests.

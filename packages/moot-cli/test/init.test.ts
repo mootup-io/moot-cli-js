@@ -90,10 +90,28 @@ describe('cmdInit', () => {
         ]),
       ),
       http.post('http://convo.test/api/actors/act_1/rotate-key', () =>
-        HttpResponse.json({ api_key: 'convo_key_rotated_1' }),
+        HttpResponse.json({ registration_ticket_id: 'rgt_1' }),
       ),
       http.post('http://convo.test/api/actors/act_2/rotate-key', () =>
-        HttpResponse.json({ api_key: 'convo_key_rotated_2' }),
+        HttpResponse.json({ registration_ticket_id: 'rgt_2' }),
+      ),
+      http.post('http://convo.test/api/registration-tickets/rgt_1/exchange', () =>
+        HttpResponse.json({
+          actor_id: 'act_1',
+          api_key: 'convo_key_rotated_1',
+          display_name: 'Leader',
+          actor_type: 'agent',
+          api_key_prefix: 'convo_key_ro',
+        }),
+      ),
+      http.post('http://convo.test/api/registration-tickets/rgt_2/exchange', () =>
+        HttpResponse.json({
+          actor_id: 'act_2',
+          api_key: 'convo_key_rotated_2',
+          display_name: 'Spec',
+          actor_type: 'agent',
+          api_key_prefix: 'convo_key_ro',
+        }),
       ),
     );
     const { cmdInit } = await import('../src/index.js');
@@ -232,10 +250,22 @@ describe('cmdInit', () => {
         ) as unknown as Response;
       }
       if (url.endsWith('/api/actors/act_1/rotate-key')) {
-        return new Response(JSON.stringify({ api_key: 'convo_key_1' }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        }) as unknown as Response;
+        return new Response(
+          JSON.stringify({ registration_ticket_id: 'rgt_pat_1' }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ) as unknown as Response;
+      }
+      if (url.endsWith('/api/registration-tickets/rgt_pat_1/exchange')) {
+        return new Response(
+          JSON.stringify({
+            actor_id: 'act_1',
+            api_key: 'convo_key_1',
+            display_name: 'Leader',
+            actor_type: 'agent',
+            api_key_prefix: 'convo_key_1',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ) as unknown as Response;
       }
       throw new Error(`unexpected fetch: ${url}`);
     };
@@ -275,7 +305,16 @@ describe('cmdInit', () => {
         ]),
       ),
       http.post('http://convo.test/api/actors/act_1/rotate-key', () =>
-        HttpResponse.json({ api_key: 'convo_key_rotated_1' }),
+        HttpResponse.json({ registration_ticket_id: 'rgt_t6' }),
+      ),
+      http.post('http://convo.test/api/registration-tickets/rgt_t6/exchange', () =>
+        HttpResponse.json({
+          actor_id: 'act_1',
+          api_key: 'convo_key_rotated_1',
+          display_name: 'Leader',
+          actor_type: 'agent',
+          api_key_prefix: 'convo_key_ro',
+        }),
       ),
     );
     const { cmdInit } = await import('../src/index.js');

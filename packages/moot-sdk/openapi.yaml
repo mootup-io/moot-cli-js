@@ -17,6 +17,18 @@ paths:
                 additionalProperties: true
                 type: object
                 title: Response Health Health Get
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/events/stream:
     get:
       summary: Stream Events
@@ -40,6 +52,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces:
     get:
       summary: List Spaces
@@ -63,8 +87,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/SpaceInfo'
                 title: Response List Spaces Api Spaces Get
         '422':
           description: Validation Error
@@ -72,6 +95,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     post:
       summary: Create Space
       operationId: create_space_api_spaces_post
@@ -87,15 +122,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Create Space Api Spaces Post
+                $ref: '#/components/schemas/CreateSpaceResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/status:
     get:
       summary: Get Status
@@ -113,15 +158,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Status Api Spaces  Space Id  Status Get
+                $ref: '#/components/schemas/SpaceStatus'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}:
     patch:
       summary: Update Space
@@ -145,15 +200,60 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Update Space Api Spaces  Space Id  Patch
+                $ref: '#/components/schemas/SpaceInfo'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      summary: Get Space
+      operationId: get_space_api_spaces__space_id__get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpaceInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/archive:
     post:
       summary: Archive Space
@@ -171,15 +271,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Archive Space Api Spaces  Space Id  Archive Post
+                $ref: '#/components/schemas/SpaceInfo'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/events:
     get:
       summary: Get Events
@@ -211,6 +321,17 @@ paths:
           description: Event ID cursor — return events before this
           title: Before
         description: Event ID cursor — return events before this
+      - name: at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: 'UX-3 D-UX3-S6: load window of ~limit events ending at this
+            event_id'
+          title: At
+        description: 'UX-3 D-UX3-S6: load window of ~limit events ending at this event_id'
       - name: limit
         in: query
         required: false
@@ -228,8 +349,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/ContextEvent'
                 title: Response Get Events Api Spaces  Space Id  Events Get
         '422':
           description: Validation Error
@@ -237,6 +357,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     post:
       summary: Add Event
       operationId: add_event_api_spaces__space_id__events_post
@@ -259,15 +391,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Add Event Api Spaces  Space Id  Events Post
+                $ref: '#/components/schemas/ContextEvent'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/transcript:
     get:
       summary: Get Transcript
@@ -303,8 +445,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/ContextEvent'
                 title: Response Get Transcript Api Spaces  Space Id  Transcript Get
         '422':
           description: Validation Error
@@ -312,6 +453,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/participants:
     get:
       summary: Get Participants
@@ -331,8 +484,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Participant'
                 title: Response Get Participants Api Spaces  Space Id  Participants
                   Get
         '422':
@@ -341,6 +493,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/participants/{participant_id}/status:
     patch:
       summary: Update Participant Status
@@ -370,16 +534,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Update Participant Status Api Spaces  Space Id  Participants  Participant
-                  Id  Status Patch
+                $ref: '#/components/schemas/Participant'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/participants/{participant_id}/heartbeat:
     post:
       summary: Participant Heartbeat
@@ -404,16 +577,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Participant Heartbeat Api Spaces  Space Id  Participants  Participant
-                  Id  Heartbeat Post
+                $ref: '#/components/schemas/HeartbeatResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/speech:
     post:
       summary: Add Speech
@@ -437,15 +619,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Add Speech Api Spaces  Space Id  Speech Post
+                $ref: '#/components/schemas/ContextEvent'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/response:
     post:
       summary: Post Response
@@ -469,15 +661,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Post Response Api Spaces  Space Id  Response Post
+                $ref: '#/components/schemas/ContextEvent'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/join:
     post:
       summary: Join Space
@@ -501,15 +703,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Join Space Api Spaces  Space Id  Join Post
+                $ref: '#/components/schemas/JoinSpaceResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/links:
     post:
       summary: Create Link
@@ -533,15 +745,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Create Link Api Spaces  Space Id  Links Post
+                $ref: '#/components/schemas/SpaceLink'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: List Links
       operationId: list_links_api_spaces__space_id__links_get
@@ -570,8 +792,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/SpaceLink'
                 title: Response List Links Api Spaces  Space Id  Links Get
         '422':
           description: Validation Error
@@ -579,6 +800,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/links/{link_id}:
     delete:
       summary: Delete Link
@@ -602,15 +835,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Delete Link Api Spaces  Space Id  Links  Link Id  Delete
+                $ref: '#/components/schemas/DeleteLinkResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/events/{event_id}:
     get:
       summary: Get Event
@@ -634,15 +877,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Event Api Spaces  Space Id  Events  Event Id  Get
+                $ref: '#/components/schemas/ContextEvent'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/mentions/{participant_id}:
     get:
       summary: Get Mentions
@@ -687,8 +940,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/ContextEvent'
                 title: Response Get Mentions Api Spaces  Space Id  Mentions  Participant
                   Id  Get
         '422':
@@ -697,6 +949,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/activity:
     get:
       summary: Get Activity
@@ -737,15 +1001,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Activity Api Spaces  Space Id  Activity Get
+                $ref: '#/components/schemas/ActivityDigest'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/summary:
     get:
       summary: Get Summary
@@ -792,15 +1066,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Summary Api Spaces  Space Id  Summary Get
+                $ref: '#/components/schemas/Summary'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors:
     post:
       summary: Register Actor
@@ -817,8 +1101,9 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
+                anyOf:
+                - $ref: '#/components/schemas/ActorCredentialsResponse'
+                - $ref: '#/components/schemas/ActorRegistrationTicketResponse'
                 title: Response Register Actor Api Actors Post
         '422':
           description: Validation Error
@@ -826,6 +1111,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/agents:
+    post:
+      summary: Register Agent
+      description: 'Provision a single agent sponsored by the calling human.
+
+
+        Tenant + sponsor derived from `actor` (the auth token) per
+
+        D-TENANT-FROM-TOKEN. Body MUST NOT carry tenant_id or sponsor_id;
+
+        Pydantic strips unknown fields silently.'
+      operationId: register_agent_api_agents_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgentRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActorRegistrationTicketResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/me:
     get:
       summary: Get Me
@@ -836,9 +1176,19 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Get Me Api Actors Me Get
+                $ref: '#/components/schemas/Actor'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/me/heartbeat:
     post:
       summary: Actor Heartbeat
@@ -850,9 +1200,65 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Actor Heartbeat Api Actors Me Heartbeat Post
+                $ref: '#/components/schemas/HeartbeatResponse'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/actors/me/pulse:
+    post:
+      summary: Actor Pulse
+      description: 'Activity Pulse — record passive-observation pulse for the calling
+        actor.
+
+
+        Actor identity derives EXCLUSIVELY from the request-auth context per
+
+        D-AP-S2 (mirror of ``me/heartbeat``). The request body MUST NOT carry
+
+        an ``actor_id``; Pydantic strips unknown fields silently. Cross-actor
+
+        write is structurally impossible (per-actor write fence; UX-3 carry).'
+      operationId: actor_pulse_api_actors_me_pulse_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PulseRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PulseResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/me/spaces:
     get:
       summary: Get My Spaces
@@ -877,8 +1283,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/SpaceInfo'
                 title: Response Get My Spaces Api Actors Me Spaces Get
         '422':
           description: Validation Error
@@ -886,6 +1291,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/me/agents:
     get:
       summary: Get My Agents
@@ -897,10 +1314,94 @@ paths:
             application/json:
               schema:
                 items:
-                  additionalProperties: true
-                  type: object
+                  $ref: '#/components/schemas/Actor'
                 type: array
                 title: Response Get My Agents Api Actors Me Agents Get
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/actors/me/oauth-grants:
+    get:
+      summary: Get My Oauth Grants
+      description: List active OAuth grants for the current user, aggregated by client
+        (AH-d).
+      operationId: get_my_oauth_grants_api_actors_me_oauth_grants_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/OAuthGrantSummary'
+                type: array
+                title: Response Get My Oauth Grants Api Actors Me Oauth Grants Get
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/actors/me/oauth-grants/{client_id}/disconnect:
+    post:
+      summary: Disconnect Oauth Grant
+      description: 'Revoke every active grant chain for (current_user, client_id)
+        (AH-d).
+
+
+        Session-authenticated convenience endpoint backing the /settings/access
+
+        Disconnect button. Cross-user attempts are silently impossible — the SQL
+
+        is filtered by session user.'
+      operationId: disconnect_oauth_grant_api_actors_me_oauth_grants__client_id__disconnect_post
+      parameters:
+      - name: client_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Client Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthDisconnectResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/me/orientation:
     get:
       summary: Get Orientation
@@ -912,9 +1413,19 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Get Orientation Api Actors Me Orientation Get
+                $ref: '#/components/schemas/OrientationResponse'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/focus:
     put:
       summary: Set Focus
@@ -932,15 +1443,25 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Set Focus Api Actors Focus Put
+                $ref: '#/components/schemas/SetFocusResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/{actor_id}:
     patch:
       summary: Update Actor
@@ -964,15 +1485,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Update Actor Api Actors  Actor Id  Patch
+                $ref: '#/components/schemas/Actor'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     delete:
       summary: Delete Actor
       operationId: delete_actor_api_actors__actor_id__delete
@@ -989,15 +1520,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Delete Actor Api Actors  Actor Id  Delete
+                $ref: '#/components/schemas/DeleteActorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/agents/{agent_id}/first-key:
     post:
       summary: First Key
@@ -1028,15 +1569,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response First Key Api Agents  Agent Id  First Key Post
+                $ref: '#/components/schemas/FirstKeyTicketResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/{actor_id}/rotate-key:
     post:
       summary: Rotate Key
@@ -1054,8 +1605,9 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
+                anyOf:
+                - $ref: '#/components/schemas/ActorCredentialsResponse'
+                - $ref: '#/components/schemas/ActorRegistrationTicketResponse'
                 title: Response Rotate Key Api Actors  Actor Id  Rotate Key Post
         '422':
           description: Validation Error
@@ -1063,6 +1615,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/actors/{actor_id}/release:
     post:
       summary: Release Agent
@@ -1098,15 +1662,67 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Release Agent Api Actors  Actor Id  Release Post
+                $ref: '#/components/schemas/ReleaseAgentResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/actors/{actor_id}/session-count:
+    get:
+      summary: Get Session Count
+      description: 'Return live WS + MCP connection cardinalities for an agent (A-2).
+
+
+        Tenant-scoped: caller must share the target''s tenant. Hover-card reads
+
+        this on demand; no caching.'
+      operationId: get_session_count_api_actors__actor_id__session_count_get
+      parameters:
+      - name: actor_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Actor Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionCountResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/personal-access-tokens:
     post:
       summary: Create Pat
@@ -1124,15 +1740,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Create Pat Api Personal Access Tokens Post
+                $ref: '#/components/schemas/CreatePatResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: List Pats
       description: List the authenticated user's PATs (active by default).
@@ -1153,8 +1779,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/PersonalAccessToken'
                 title: Response List Pats Api Personal Access Tokens Get
         '422':
           description: Validation Error
@@ -1162,6 +1787,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/personal-access-tokens/{pat_id}:
     delete:
       summary: Revoke Pat
@@ -1180,35 +1817,43 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Revoke Pat Api Personal Access Tokens  Pat Id  Delete
+                $ref: '#/components/schemas/OkResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /auth/request:
     post:
       summary: Auth Request
-      description: 'Email-driven session issuance (alpha: no email delivery).
+      description: 'Send a magic-link email (Run AE-2).
 
 
-        Existing user: issues a new session, sets cookie, returns {created: false}.
+        Flipped from casual-auth alpha: no session, no cookie. Mints a
 
-        New user with valid invite_code: creates user, issues session, returns
+        magic-link token under a caller-managed transaction, then sends the
 
-        {created: true}. Alpha compromise: the cookie is set directly in the
+        link via the AE-1 email primitive. Response echoes ``email`` so the
 
-        response instead of sending a link to the user''s email.
+        UI can display a "check_your_email" state.
 
 
-        R6 Stage E: the whole flow runs under a single caller-managed
+        Rate-limited by ``rl_auth_public`` (10/min per-IP; limiter also gates
 
-        transaction via auth_service.issue_magic_link_session(conn, ...).
-
-        Cookie is set AFTER commit.'
+        ``/auth/redeem``).'
       operationId: auth_request_auth_request_post
       requestBody:
         content:
@@ -1222,15 +1867,72 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Auth Request Auth Request Post
+                $ref: '#/components/schemas/AuthRequestResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/redeem:
+    get:
+      summary: Auth Redeem
+      description: 'Redeem a magic-link token (Run AE-2).
+
+
+        Atomic transaction: validates + consumes token + creates session +
+
+        sets ``email_verified_at`` (write-once-if-null). Sets session cookie
+
+        on success and redirects to the user''s ``default_space_id`` (or
+
+        ``/spaces`` if none).'
+      operationId: auth_redeem_auth_redeem_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          minLength: 10
+          maxLength: 500
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /auth/logout:
     post:
       summary: Auth Logout
@@ -1243,9 +1945,196 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Auth Logout Auth Logout Post
+                $ref: '#/components/schemas/OkResponse'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/login:
+    post:
+      summary: Auth Login
+      description: 'Password-based login (Run AE-3). Rate-limited via `rl_auth_public`
+
+        (10/min per-IP).
+
+
+        BH-2-B: response time padded to FLOOR_MS via try/finally so 401 fast-paths
+
+        do not leak timing.'
+      operationId: auth_login_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthRedeemResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/request-reset:
+    post:
+      summary: Auth Request Reset
+      description: 'Request a password-reset email (Run AE-3).
+
+
+        Inv 10 constant-shape response regardless of email existence or
+
+        verification status. Email is only sent for known + verified users.
+
+
+        BH-2-B: try/finally pad to FLOOR_MS (defends both verified-email and
+
+        unknown-email paths).'
+      operationId: auth_request_reset_auth_request_reset_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestResetRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResetResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/reset:
+    post:
+      summary: Auth Reset
+      description: 'Redeem a password-reset token (Run AE-3).
+
+
+        Atomic: consume token + revoke-all sessions + set password + mint
+
+        fresh session. Inv 2 ordering: revoke-all precedes create-new.
+
+
+        BH-2-A: validate_password_strength(new_password) before hash; 400 on weak.
+
+        BH-2-B: try/finally pad to FLOOR_MS.'
+      operationId: auth_reset_auth_reset_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthRedeemResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /auth/set-password:
+    post:
+      summary: Auth Set Password
+      description: "Set or change the password for the authenticated user (Run AE-3).\n\
+        \nIf the user already has a password_hash, ``current_password`` is\nrequired\
+        \ and must verify. If not, ``current_password`` is ignored\n(first-time set\
+        \ path).\n\nBH-2-A: validate_password_strength(req.new_password) before hash.\n\
+        BH-2-D: if session-authed AND session age > 5min AND existing_hash present,\n\
+        \        require non-empty current_password; else 403 step_up_required.\n\
+        \        Bearer/PAT/OAuth-authed callers skip step-up (F-BH2-STEP-UP-BEARER)."
+      operationId: auth_set_password_auth_set_password_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPasswordRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OkResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/invites/redeem:
     post:
       summary: Redeem Invite
@@ -1266,7 +2155,20 @@ paths:
 
         assignment, and invite usage increment all roll back atomically.
 
-        Cookie is only set after the transaction commits.'
+        Cookie is only set after the transaction commits.
+
+
+        BH-3-A: accepts an optional ``password`` (zxcvbn-validated, bcrypt-hashed,
+
+        written in the same transaction as the actor insert). Auto-issues a
+
+        magic-link to the redeemed email post-commit (regardless of password) so
+
+        the user has a verification path on first sign-in. T-5 partial-success:
+
+        a magic-link send failure is logged + response continues 200; not rolled
+
+        back.'
       operationId: redeem_invite_api_invites_redeem_post
       requestBody:
         content:
@@ -1280,15 +2182,25 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Redeem Invite Api Invites Redeem Post
+                $ref: '#/components/schemas/RedeemInviteResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/threads:
     post:
       summary: Create Thread
@@ -1312,15 +2224,92 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Create Thread Api Spaces  Space Id  Threads Post
+                $ref: '#/components/schemas/Thread'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      summary: List Threads Route
+      description: 'UX-3 D-UX3-S1: paginated thread metadata for the space.'
+      operationId: list_threads_route_api_spaces__space_id__threads_get
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: ISO-8601 last_activity_at, exclusive upper-bound
+          title: Cursor
+        description: ISO-8601 last_activity_at, exclusive upper-bound
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: filter
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+          description: Optional message_type filter (repeatable query param)
+          title: Filter
+        description: Optional message_type filter (repeatable query param)
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListThreadsResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/threads/{event_id}:
     get:
       summary: Get Thread
@@ -1346,15 +2335,75 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Thread Api Spaces  Space Id  Threads  Event Id  Get
+                $ref: '#/components/schemas/ThreadWithEvents'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/spaces/{space_id}/threads/{thread_id}/read:
+    post:
+      summary: Mark Thread Read Route
+      description: 'UX-3 D-UX3-S8: upsert the authenticated actor''s read pointer.
+
+
+        QA FA-QA-2 / spec § 9 invariant 7: `actor_id` derives from the
+
+        `require_actor` dependency — NEVER from request body.'
+      operationId: mark_thread_read_route_api_spaces__space_id__threads__thread_id__read_post
+      parameters:
+      - name: space_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Space Id
+      - name: thread_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Thread Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkThreadReadRequest'
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/decisions:
     get:
       summary: Get Decisions
@@ -1384,8 +2433,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Decision'
                 title: Response Get Decisions Api Spaces  Space Id  Decisions Get
         '422':
           description: Validation Error
@@ -1393,6 +2441,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     post:
       summary: Propose Decision
       operationId: propose_decision_api_spaces__space_id__decisions_post
@@ -1415,15 +2475,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Propose Decision Api Spaces  Space Id  Decisions Post
+                $ref: '#/components/schemas/Decision'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/decisions/summary:
     get:
       summary: Get Decision Summary
@@ -1441,16 +2511,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Decision Summary Api Spaces  Space Id  Decisions
-                  Summary Get
+                $ref: '#/components/schemas/DecisionSummary'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/decisions/{decision_id}:
     get:
       summary: Get Decision
@@ -1474,16 +2553,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Decision Api Spaces  Space Id  Decisions  Decision
-                  Id  Get
+                $ref: '#/components/schemas/Decision'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/decisions/{decision_id}/resolve:
     put:
       summary: Resolve Decision
@@ -1513,16 +2601,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Resolve Decision Api Spaces  Space Id  Decisions  Decision
-                  Id  Resolve Put
+                $ref: '#/components/schemas/Decision'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/questions:
     post:
       summary: Ask Question
@@ -1546,15 +2643,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Ask Question Api Spaces  Space Id  Questions Post
+                $ref: '#/components/schemas/Question'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: Get Questions
       operationId: get_questions_api_spaces__space_id__questions_get
@@ -1581,8 +2688,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Question'
                 title: Response Get Questions Api Spaces  Space Id  Questions Get
         '422':
           description: Validation Error
@@ -1590,6 +2696,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/questions/{question_id}:
     get:
       summary: Get Question
@@ -1613,16 +2731,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Question Api Spaces  Space Id  Questions  Question
-                  Id  Get
+                $ref: '#/components/schemas/Question'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     patch:
       summary: Update Question
       operationId: update_question_api_spaces__space_id__questions__question_id__patch
@@ -1651,16 +2778,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Update Question Api Spaces  Space Id  Questions  Question
-                  Id  Patch
+                $ref: '#/components/schemas/Question'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/timers:
     post:
       summary: Create Timer
@@ -1683,13 +2819,26 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/TimerResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: List Timers
       operationId: list_timers_api_spaces__space_id__timers_get
@@ -1705,13 +2854,29 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimerResponse'
+                title: Response List Timers Api Spaces  Space Id  Timers Get
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/timers/{timer_id}:
     delete:
       summary: Cancel Timer
@@ -1734,13 +2899,26 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema: {}
+              schema:
+                $ref: '#/components/schemas/DeletedResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/archives:
     post:
       summary: Create Archive
@@ -1764,15 +2942,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Create Archive Api Spaces  Space Id  Archives Post
+                $ref: '#/components/schemas/Archive'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: List Archives
       operationId: list_archives_api_spaces__space_id__archives_get
@@ -1800,8 +2988,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Archive'
                 title: Response List Archives Api Spaces  Space Id  Archives Get
         '422':
           description: Validation Error
@@ -1809,6 +2996,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/spaces/{space_id}/archives/{archive_id}:
     get:
       summary: Get Archive
@@ -1832,16 +3031,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Archive Api Spaces  Space Id  Archives  Archive
-                  Id  Get
+                $ref: '#/components/schemas/Archive'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/prompt-rules:
     post:
       summary: Create Prompt Rule
@@ -1859,15 +3067,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Create Prompt Rule Api Prompt Rules Post
+                $ref: '#/components/schemas/PromptRuleResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: List Prompt Rules
       description: List prompt rules for the authenticated tenant.
@@ -1891,8 +3109,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/PromptRuleResponse'
                 title: Response List Prompt Rules Api Prompt Rules Get
         '422':
           description: Validation Error
@@ -1900,6 +3117,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/prompt-rules/{rule_id}:
     get:
       summary: Get Prompt Rule
@@ -1918,15 +3147,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Prompt Rule Api Prompt Rules  Rule Id  Get
+                $ref: '#/components/schemas/PromptRuleResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     patch:
       summary: Update Prompt Rule
       description: Update a prompt rule (toggle enabled, change threshold, etc.).
@@ -1950,15 +3189,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Update Prompt Rule Api Prompt Rules  Rule Id  Patch
+                $ref: '#/components/schemas/PromptRuleResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     delete:
       summary: Delete Prompt Rule
       description: Delete a prompt rule.
@@ -1976,15 +3225,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Delete Prompt Rule Api Prompt Rules  Rule Id  Delete
+                $ref: '#/components/schemas/DeletedResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/tenants:
     post:
       summary: Create Tenant Endpoint
@@ -1996,9 +3255,19 @@ paths:
           content:
             application/json:
               schema:
-                additionalProperties: true
-                type: object
-                title: Response Create Tenant Endpoint Api Tenants Post
+                $ref: '#/components/schemas/Tenant'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/tenants/{tenant_id}:
     get:
       summary: Get Tenant Endpoint
@@ -2017,15 +3286,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Get Tenant Endpoint Api Tenants  Tenant Id  Get
+                $ref: '#/components/schemas/Tenant'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/tenants:
     get:
       summary: Admin List Tenants
@@ -2050,8 +3329,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Tenant'
                 title: Response Admin List Tenants Api Admin Tenants Get
         '422':
           description: Validation Error
@@ -2059,6 +3337,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     post:
       summary: Admin Create Tenant
       description: Create a tenant without assigning the creator. Admin only.
@@ -2075,15 +3365,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Create Tenant Api Admin Tenants Post
+                $ref: '#/components/schemas/Tenant'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/tenants/{tenant_id}:
     get:
       summary: Admin Get Tenant
@@ -2102,15 +3402,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Get Tenant Api Admin Tenants  Tenant Id  Get
+                $ref: '#/components/schemas/Tenant'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/tenants/{tenant_id}/suspend:
     put:
       summary: Admin Suspend Tenant
@@ -2130,16 +3440,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Suspend Tenant Api Admin Tenants  Tenant Id  Suspend
-                  Put
+                $ref: '#/components/schemas/Tenant'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/tenants/{tenant_id}/reactivate:
     put:
       summary: Admin Reactivate Tenant
@@ -2158,16 +3477,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Reactivate Tenant Api Admin Tenants  Tenant
-                  Id  Reactivate Put
+                $ref: '#/components/schemas/Tenant'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/tenants/{tenant_id}/actors:
     get:
       summary: Admin List Tenant Actors
@@ -2188,8 +3516,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Actor'
                 title: Response Admin List Tenant Actors Api Admin Tenants  Tenant
                   Id  Actors Get
         '422':
@@ -2198,6 +3525,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/actors/{actor_id}:
     delete:
       summary: Admin Delete Actor
@@ -2216,15 +3555,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Delete Actor Api Admin Actors  Actor Id  Delete
+                $ref: '#/components/schemas/DeleteActorResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/actors/{actor_id}/admin:
     put:
       summary: Admin Toggle Admin
@@ -2249,16 +3598,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Toggle Admin Api Admin Actors  Actor Id  Admin
-                  Put
+                $ref: '#/components/schemas/Actor'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/invites:
     post:
       summary: Admin Create Invite
@@ -2276,15 +3634,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Create Invite Api Admin Invites Post
+                $ref: '#/components/schemas/Invite'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
     get:
       summary: Admin List Invites
       description: List invites. Admin only.
@@ -2308,8 +3676,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/Invite'
                 title: Response Admin List Invites Api Admin Invites Get
         '422':
           description: Validation Error
@@ -2317,6 +3684,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/admin/invites/{invite_id}:
     delete:
       summary: Admin Delete Invite
@@ -2335,15 +3714,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-                title: Response Admin Delete Invite Api Admin Invites  Invite Id  Delete
+                $ref: '#/components/schemas/DeleteInviteResponse'
         '422':
           description: Validation Error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /api/search:
     get:
       summary: Search
@@ -2397,8 +3786,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  additionalProperties: true
+                  $ref: '#/components/schemas/SearchResult'
                 title: Response Search Api Search Get
         '422':
           description: Validation Error
@@ -2406,8 +3794,1287 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/oauth/authorize-info:
+    get:
+      summary: Oauth Authorize Info
+      description: 'JSON variant of consent-screen data for the SvelteKit loader (AH-d).
+
+
+        Same validation as the deleted GET /oauth/authorize HTML handler:
+
+        response_type=code, code_challenge_method=S256, client_id decodes,
+
+        redirect_uri is registered, session present, CSRF nonce issued.'
+      operationId: oauth_authorize_info_api_oauth_authorize_info_get
+      parameters:
+      - name: response_type
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Response Type
+      - name: client_id
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Client Id
+      - name: redirect_uri
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Redirect Uri
+      - name: state
+        in: query
+        required: true
+        schema:
+          type: string
+          title: State
+      - name: code_challenge
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Code Challenge
+      - name: code_challenge_method
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Code Challenge Method
+      - name: scope
+        in: query
+        required: false
+        schema:
+          type: string
+          default: ''
+          title: Scope
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthAuthorizeInfo'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /oauth/authorize:
+    post:
+      summary: Oauth Authorize Post
+      operationId: oauth_authorize_post_oauth_authorize_post
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Body_oauth_authorize_post_oauth_authorize_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /oauth/token:
+    post:
+      summary: Oauth Token
+      operationId: oauth_token_oauth_token_post
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Body_oauth_token_oauth_token_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthTokenResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /oauth/register:
+    post:
+      summary: Oauth Register
+      operationId: oauth_register_oauth_register_post
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthRegisterResponse'
+  /.well-known/oauth-authorization-server:
+    get:
+      summary: Oauth Authorization Server Metadata
+      operationId: oauth_authorization_server_metadata__well_known_oauth_authorization_server_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthAuthorizationServerMetadata'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /.well-known/oauth-protected-resource:
+    get:
+      summary: Oauth Protected Resource Metadata
+      operationId: oauth_protected_resource_metadata__well_known_oauth_protected_resource_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProtectedResourceMetadata'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /oauth/revoke:
+    post:
+      summary: Oauth Revoke
+      operationId: oauth_revoke_oauth_revoke_post
+      responses:
+        '200':
+          description: Successful Response
+  /api/team-archetypes:
+    get:
+      summary: List Team Archetypes
+      description: List archetypes visible to the caller's tenant (public + own).
+      operationId: list_team_archetypes_api_team_archetypes_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/TeamArchetype'
+                type: array
+                title: Response List Team Archetypes Api Team Archetypes Get
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    post:
+      summary: Create Archetype Route
+      description: 'Fork a team as a new archetype (v1.0.0).
+
+
+        Caller authenticated (any actor type). `archetype_id` must match
+
+        the tenant-namespaced grammar. Non-admin callers cannot create
+
+        under `mootup/*`. `git_url` is caller-specified (OQ-TE2-2 rec (c));
+
+        mootup does not host git for derived tenants.'
+      operationId: create_archetype_route_api_team_archetypes_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArchetypeRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamArchetype'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/team-archetypes/{archetype_id}/versions:
+    post:
+      summary: Register Archetype Version Route
+      description: 'Register a new version of an existing archetype.
+
+
+        Caller must be tenant-admin of the archetype''s owning tenant, OR
+
+        ``actor.is_admin`` for ``mootup/*`` archetypes (the admin path does
+
+        not require a tenant binding — `mootup_staff` is modelled as
+
+        `is_admin` at alpha per spec § 4.5). Overwrite is always rejected;
+
+        gap-fill within major is allowed (OQ-TE2-4 rec (c)).'
+      operationId: register_archetype_version_route_api_team_archetypes__archetype_id__versions_post
+      parameters:
+      - name: archetype_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Archetype Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterArchetypeVersionRequest'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamArchetype'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      summary: List Archetype Versions Route
+      description: 'List versions of a single archetype, semver-descending.
+
+
+        Returns 404 for an unknown OR visibility-hidden archetype (no
+
+        info-leak discriminator per AE-D-NO-AUTO-CREATE pattern). Admins
+
+        without a tenant binding see only `public` rows (aligns with the
+
+        mootup-staff bypass — they don''t need tenant_id to read catalog).'
+      operationId: list_archetype_versions_route_api_team_archetypes__archetype_id__versions_get
+      parameters:
+      - name: archetype_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Archetype Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamArchetype'
+                title: Response List Archetype Versions Route Api Team Archetypes  Archetype
+                  Id  Versions Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/teams/{team_id}:
+    get:
+      summary: Get Team
+      operationId: get_team_api_teams__team_id__get
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Team Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/teams:
+    post:
+      summary: Create Team
+      description: Create a team from an archetype reference. tenant_id from auth
+        token.
+      operationId: create_team_api_teams_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/teams/install:
+    post:
+      summary: Install Team Route
+      description: 'Atomic: create team + mint N agents with keys + record installation.
+
+
+        Auth: ``team:install`` scope when OAuth-authed; non-OAuth paths (session,
+
+        PAT, API key) pass via ``require_scope``''s ``oauth_scopes is None``
+
+        branch, per D-TEAM-INSTALL-NOT-AUTO-GRANTED.'
+      operationId: install_team_route_api_teams_install_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamInstallRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamInstallResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/teams/{team_id}/export:
+    get:
+      summary: Export Team Route
+      description: 'Export a team as a cold-forkable bundle. Visibility gated by the
+
+        archetype''s visibility setting (TE-1/TE-2 pattern).'
+      operationId: export_team_route_api_teams__team_id__export_get
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Team Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamExportBundle'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/teams/import:
+    post:
+      summary: Import Team Route
+      description: 'Import a team bundle → cold-fork (new team_id in caller''s tenant).
+
+        Admin-only (`actor.is_admin`); D-TE3-IMPORT-GENERATES-TEAM-ID +
+
+        D-TE3-IMPORT-NOT-IDEMPOTENT.'
+      operationId: import_team_route_api_teams_import_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamImportRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamImportResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/transcripts/archive:
+    post:
+      summary: Archive Transcript
+      description: 'Store a PreCompact transcript blob durably in S3 + DB.
+
+
+        Pre-flight order: body-size → tenant guard → agent spoof → clock skew
+
+        → rate limit → gzip sniff. S3 put then DB insert; DB `UniqueViolation`
+
+        on retry maps to idempotent-success (§ 10 deviation).'
+      operationId: archive_transcript_api_transcripts_archive_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TranscriptArchiveRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TranscriptArchiveResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/actors/me/transcripts/archives:
+    get:
+      summary: List My Archives
+      description: 'List caller''s own archives. Authenticated-actor scoped.
+
+
+        TA-2: `paired` query filter surfaces only paired / only unpaired
+
+        archives when set; response rows carry `paired` + `post_compact_at`.'
+      operationId: list_my_archives_api_actors_me_transcripts_archives_get
+      parameters:
+      - name: since
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Since
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      - name: session_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Session Id
+      - name: captured_at
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Captured At
+      - name: paired
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Paired
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TranscriptArchive'
+                title: Response List My Archives Api Actors Me Transcripts Archives
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/transcripts/archive/{archive_id}/post-compact:
+    post:
+      summary: Post Compact Update
+      description: 'Attach a post-compact summary to an existing TA-1 archive row.
+
+
+        Pre-flight order mirrors TA-1''s archive_transcript: body-size (413)
+
+        → tenant guard → archive_id decode (404) → clock skew ±5 min (422)
+
+        → rate limit (429) → conditional UPDATE. First-write-wins semantics
+
+        via `WHERE post_compact_at IS NULL`; second write → 409 (invariant 4).'
+      operationId: post_compact_update_api_transcripts_archive__archive_id__post_compact_post
+      parameters:
+      - name: archive_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Archive Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCompactUpdateRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostCompactUpdateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/control/pause-all:
+    post:
+      summary: Pause All Route
+      description: 'Pause every agent in ``req.space_id``. Admin-only
+
+        (D-CP1-AUTHZ-IS-ADMIN-ONLY). Protocol doc:
+
+        docs/reference/control-plane-protocol.md.'
+      operationId: pause_all_route_api_control_pause_all_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PauseAllRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PauseResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/control/pause:
+    post:
+      summary: Pause Route
+      description: 'Pause a single agent. Admin-only. ``space_id`` required
+
+        (F-SCOPING-CP1-WS-IS-SPACE-SCOPED, invariant 11). Protocol doc:
+
+        docs/reference/control-plane-protocol.md.'
+      operationId: pause_route_api_control_pause_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PauseRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PauseResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/email/events:
+    post:
+      summary: Receive Email Event
+      description: 'Receive an outbound-mail event notification (provider-neutral).
+
+
+        Authentication: provider-signature verification is the integrity gate;
+
+        verified inside event_parser.parse_sns_notification before any side
+
+        effects. Subscription handshake messages are detected via the envelope
+
+        Type discriminator and the SubscribeURL is fetched to confirm.'
+      operationId: receive_email_event_api_email_events_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Receive Email Event Api Email Events Post
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/registration-tickets/{ticket_id}/exchange:
+    post:
+      summary: Exchange Registration Ticket
+      description: 'Exchange a registration ticket for the bound agent''s plaintext
+        api_key.
+
+
+        No auth header required: the ticket_id is single-use + time-limited
+
+        + cryptographically random (D-SEC-5-EXCHANGE-AUTH-1).
+
+
+        Anti-abuse: rl_low (5/min) by client IP.'
+      operationId: exchange_registration_ticket_api_registration_tickets__ticket_id__exchange_post
+      parameters:
+      - name: ticket_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Ticket Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationTicketExchangeResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /mcp:
+    post:
+      tags:
+      - mcp
+      summary: MCP JSON-RPC frame
+      description: Streamable HTTP transport (MCP 2025-03-26). Body is an opaque JSON-RPC
+        envelope; bearer auth required.
+      responses:
+        '200':
+          description: JSON-RPC response
+        '401':
+          description: Missing or invalid bearer
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    get:
+      tags:
+      - mcp
+      summary: MCP SSE event stream
+      description: Server-sent-events stream for the MCP session; bearer auth required.
+        Supports Last-Event-ID resumption per MCP 2025-03-26.
+      responses:
+        '200':
+          description: SSE stream opened
+        '401':
+          description: Missing or invalid bearer
+        4XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        5XX:
+          description: ErrorEnvelope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
 components:
   schemas:
+    ActivityDigest:
+      properties:
+        since:
+          type: string
+          title: Since
+        participants:
+          items:
+            $ref: '#/components/schemas/ParticipantActivity'
+          type: array
+          title: Participants
+      type: object
+      required:
+      - since
+      - participants
+      title: ActivityDigest
+    Actor:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        display_name:
+          type: string
+          title: Display Name
+        actor_type:
+          type: string
+          title: Actor Type
+        sponsor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sponsor Id
+        tenant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+        is_admin:
+          type: boolean
+          title: Is Admin
+          default: false
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        agent_profile:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Profile
+        api_key_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Api Key Prefix
+        default_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Space Id
+        is_connected:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Connected
+        focus_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Focus Space Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        last_seen_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Seen At
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+        oauth_scopes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Oauth Scopes
+        oauth_client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Oauth Client Id
+      type: object
+      required:
+      - actor_id
+      - display_name
+      - actor_type
+      - created_at
+      - updated_at
+      title: Actor
+    ActorCredentialsResponse:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        display_name:
+          type: string
+          title: Display Name
+        actor_type:
+          type: string
+          title: Actor Type
+        sponsor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sponsor Id
+        tenant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+        is_admin:
+          type: boolean
+          title: Is Admin
+          default: false
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        agent_profile:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Profile
+        api_key_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Api Key Prefix
+        default_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Space Id
+        is_connected:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Connected
+        focus_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Focus Space Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        last_seen_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Seen At
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+        oauth_scopes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Oauth Scopes
+        oauth_client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Oauth Client Id
+        api_key:
+          type: string
+          title: Api Key
+      type: object
+      required:
+      - actor_id
+      - display_name
+      - actor_type
+      - created_at
+      - updated_at
+      - api_key
+      title: ActorCredentialsResponse
+      description: 'Actor fields plus a plaintext api_key. Returned by register_actor
+
+        and rotate_key on the HUMAN path only (operator-clarification 2026-04-26:
+
+        SEC-5 ticket flow is agent-only; humans authenticate via password /
+
+        magic-link / PAT and are not the SEC-1 audit HIGH #19 transcript
+
+        risk surface). The api_key is only emitted at creation / rotation;
+
+        all other reads of the actor use the base Actor model.'
+    ActorRegistrationTicketResponse:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        display_name:
+          type: string
+          title: Display Name
+        actor_type:
+          type: string
+          title: Actor Type
+        sponsor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sponsor Id
+        tenant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+        is_admin:
+          type: boolean
+          title: Is Admin
+          default: false
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        agent_profile:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Profile
+        api_key_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Api Key Prefix
+        default_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Space Id
+        is_connected:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Connected
+        focus_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Focus Space Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        last_seen_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Seen At
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+        oauth_scopes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Oauth Scopes
+        oauth_client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Oauth Client Id
+        registration_ticket_id:
+          type: string
+          title: Registration Ticket Id
+      type: object
+      required:
+      - actor_id
+      - display_name
+      - actor_type
+      - created_at
+      - updated_at
+      - registration_ticket_id
+      title: ActorRegistrationTicketResponse
+      description: 'Agent metadata + a single-use registration ticket (SEC-5).
+
+
+        Returned by register_actor (agent path), register_agent, rotate_key
+
+        (agent target), in place of plaintext api_key. Caller (typically a CLI
+
+        harness shell process) exchanges the ticket via
+
+        POST /api/registration-tickets/{ticket_id}/exchange to retrieve the
+
+        plaintext api_key. No plaintext credentials in this response —
+
+        architectural fix for SEC-1 audit HIGH #19.'
     AddEventRequest:
       properties:
         speaker_id:
@@ -2471,6 +5138,12 @@ components:
           type: string
           maxLength: 65536
           title: Text
+        parent_event_id:
+          anyOf:
+          - type: string
+            maxLength: 200
+          - type: 'null'
+          title: Parent Event Id
         thread_id:
           anyOf:
           - type: string
@@ -2532,6 +5205,43 @@ components:
       required:
       - is_admin
       title: AdminToggleAdminRequest
+    Archive:
+      properties:
+        archive_id:
+          type: string
+          title: Archive Id
+        space_id:
+          type: string
+          title: Space Id
+        actor_id:
+          type: string
+          title: Actor Id
+        session_id:
+          type: string
+          title: Session Id
+        summary:
+          type: string
+          title: Summary
+        metadata:
+          additionalProperties: true
+          type: object
+          title: Metadata
+          default: {}
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - archive_id
+      - space_id
+      - actor_id
+      - session_id
+      - summary
+      - created_at
+      title: Archive
+      description: 'Session archive. Stored in session_archives table; shape matches
+
+        archive_store._row_to_dict output.'
     AskQuestionRequest:
       properties:
         asked_by:
@@ -2553,6 +5263,36 @@ components:
       - asked_by
       - text
       title: AskQuestionRequest
+    AuthRedeemResponse:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        display_name:
+          type: string
+          title: Display Name
+        tenant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+        tenant_name:
+          type: string
+          title: Tenant Name
+        default_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Space Id
+      type: object
+      required:
+      - actor_id
+      - display_name
+      - tenant_id
+      - tenant_name
+      - default_space_id
+      title: AuthRedeemResponse
+      description: Post-redeem response (for AJAX callers; HTML path 302 redirects).
     AuthRequestRequest:
       properties:
         email:
@@ -2575,6 +5315,208 @@ components:
       required:
       - email
       title: AuthRequestRequest
+    AuthRequestResponse:
+      properties:
+        status:
+          type: string
+          const: check_your_email
+          title: Status
+        email:
+          type: string
+          title: Email
+      type: object
+      required:
+      - status
+      - email
+      title: AuthRequestResponse
+      description: 'Run AE-2: shape flipped from casual-auth alpha.
+
+
+        ``/auth/request`` returns only the check-your-email status + echoed email.
+
+        Session is created at ``/auth/redeem`` after magic-link click.'
+    Body_oauth_authorize_post_oauth_authorize_post:
+      properties:
+        client_id:
+          type: string
+          title: Client Id
+        redirect_uri:
+          type: string
+          title: Redirect Uri
+        state:
+          type: string
+          title: State
+        scope:
+          type: string
+          title: Scope
+          default: ''
+        code_challenge:
+          type: string
+          title: Code Challenge
+        code_challenge_method:
+          type: string
+          title: Code Challenge Method
+        csrf:
+          type: string
+          title: Csrf
+        decision:
+          type: string
+          title: Decision
+      type: object
+      required:
+      - client_id
+      - redirect_uri
+      - state
+      - code_challenge
+      - code_challenge_method
+      - csrf
+      - decision
+      title: Body_oauth_authorize_post_oauth_authorize_post
+    Body_oauth_token_oauth_token_post:
+      properties:
+        grant_type:
+          type: string
+          title: Grant Type
+        client_id:
+          type: string
+          title: Client Id
+        code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code
+        redirect_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Redirect Uri
+        code_verifier:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Code Verifier
+        refresh_token:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Refresh Token
+        scope:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scope
+      type: object
+      required:
+      - grant_type
+      - client_id
+      title: Body_oauth_token_oauth_token_post
+    ContextEvent:
+      properties:
+        event_id:
+          type: string
+          title: Event Id
+        space_id:
+          type: string
+          title: Space Id
+        speaker_id:
+          type: string
+          title: Speaker Id
+        speaker_name:
+          type: string
+          title: Speaker Name
+        speaker_type:
+          type: string
+          title: Speaker Type
+        text:
+          type: string
+          title: Text
+        timestamp:
+          type: string
+          title: Timestamp
+        parent_event_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Event Id
+        references:
+          items:
+            type: string
+          type: array
+          title: References
+        thread_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Thread Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+      type: object
+      required:
+      - space_id
+      - speaker_id
+      - speaker_name
+      - speaker_type
+      - text
+      title: ContextEvent
+    CreateAgentRequest:
+      properties:
+        role:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Role
+        agent_profile:
+          anyOf:
+          - type: string
+            maxLength: 512
+          - type: 'null'
+          title: Agent Profile
+      type: object
+      required:
+      - role
+      title: CreateAgentRequest
+      description: 'Body for POST /api/agents. Tenant + sponsor derived from auth
+        token
+
+        per D-TENANT-FROM-TOKEN; body MUST NOT include `tenant_id` or
+
+        `sponsor_id` (T-4 sponsor-escalation defense).'
+    CreateArchetypeRequest:
+      properties:
+        archetype_id:
+          type: string
+          title: Archetype Id
+        source_team_id:
+          type: string
+          title: Source Team Id
+        visibility:
+          type: string
+          title: Visibility
+          default: private
+        git_url:
+          type: string
+          title: Git Url
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - archetype_id
+      - source_team_id
+      - git_url
+      title: CreateArchetypeRequest
+      description: 'Body for POST /api/team-archetypes (TE-2, fork-as-new-archetype).
+
+
+        Always inserts v1.0.0. `git_url` is caller-specified per
+
+        OQ-TE2-2 rec (c); mootup does not host git for derived tenants.'
     CreateArchiveRequest:
       properties:
         session_id:
@@ -2633,6 +5575,45 @@ components:
       required:
       - name
       title: CreatePatRequest
+    CreatePatResponse:
+      properties:
+        pat_id:
+          type: string
+          title: Pat Id
+        name:
+          type: string
+          title: Name
+        token_prefix:
+          type: string
+          title: Token Prefix
+        created_at:
+          type: string
+          title: Created At
+        last_used_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Used At
+        revoked_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revoked At
+        token:
+          type: string
+          title: Token
+      type: object
+      required:
+      - pat_id
+      - name
+      - token_prefix
+      - created_at
+      - token
+      title: CreatePatResponse
+      description: 'PersonalAccessToken plus the plaintext token (one-shot reveal
+        on
+
+        creation). The token field is absent from all read paths.'
     CreatePromptRuleRequest:
       properties:
         space_id:
@@ -2705,6 +5686,46 @@ components:
           default: []
       type: object
       title: CreateSpaceRequest
+    CreateSpaceResponse:
+      properties:
+        space_id:
+          type: string
+          title: Space Id
+        status:
+          $ref: '#/components/schemas/SpaceStatus'
+      type: object
+      required:
+      - space_id
+      - status
+      title: CreateSpaceResponse
+    CreateTeamRequest:
+      properties:
+        team_id_slug:
+          type: string
+          title: Team Id Slug
+        git_url:
+          type: string
+          title: Git Url
+        archetype_id:
+          type: string
+          title: Archetype Id
+        archetype_version:
+          type: string
+          title: Archetype Version
+        diverged_at_commit:
+          type: string
+          title: Diverged At Commit
+      type: object
+      required:
+      - team_id_slug
+      - git_url
+      - archetype_id
+      - archetype_version
+      - diverged_at_commit
+      title: CreateTeamRequest
+      description: 'Body for POST /api/teams. tenant_id deliberately absent —
+
+        decoded from auth token per D-TENANT-FROM-TOKEN.'
     CreateThreadRequest:
       properties:
         parent_event_id:
@@ -2745,6 +5766,172 @@ components:
       - timer_type
       - duration_secs
       title: CreateTimerRequest
+    Decision:
+      properties:
+        decision_id:
+          type: string
+          title: Decision Id
+        space_id:
+          type: string
+          title: Space Id
+        proposed_by:
+          type: string
+          title: Proposed By
+        text:
+          type: string
+          title: Text
+        status:
+          type: string
+          title: Status
+          default: proposed
+        resolved_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolved By
+        resolved_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolved At
+        resolution:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Resolution
+        question_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Question Id
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - decision_id
+      - space_id
+      - proposed_by
+      - text
+      - created_at
+      title: Decision
+    DecisionSummary:
+      properties:
+        total:
+          type: integer
+          title: Total
+        by_status:
+          additionalProperties:
+            type: integer
+          type: object
+          title: By Status
+        decisions:
+          items:
+            $ref: '#/components/schemas/Decision'
+          type: array
+          title: Decisions
+      type: object
+      required:
+      - total
+      - by_status
+      - decisions
+      title: DecisionSummary
+    DeleteActorResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        actor_id:
+          type: string
+          title: Actor Id
+      type: object
+      required:
+      - status
+      - actor_id
+      title: DeleteActorResponse
+    DeleteInviteResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        invite_id:
+          type: string
+          title: Invite Id
+      type: object
+      required:
+      - status
+      - invite_id
+      title: DeleteInviteResponse
+    DeleteLinkResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        link_id:
+          type: string
+          title: Link Id
+      type: object
+      required:
+      - status
+      - link_id
+      title: DeleteLinkResponse
+    DeletedResponse:
+      properties:
+        deleted:
+          type: boolean
+          title: Deleted
+      type: object
+      required:
+      - deleted
+      title: DeletedResponse
+    ExportManifest:
+      properties:
+        checksum:
+          type: string
+          pattern: ^sha256:[0-9a-f]{64}$
+          title: Checksum
+        bundle_size_bytes:
+          type: integer
+          minimum: 0.0
+          title: Bundle Size Bytes
+      type: object
+      required:
+      - checksum
+      - bundle_size_bytes
+      title: ExportManifest
+    FirstKeyTicketResponse:
+      properties:
+        registration_ticket_id:
+          type: string
+          title: Registration Ticket Id
+        agent_id:
+          type: string
+          title: Agent Id
+      type: object
+      required:
+      - registration_ticket_id
+      - agent_id
+      title: FirstKeyTicketResponse
+      description: 'SEC-5: replaces FirstKeyResponse. Caller exchanges the ticket
+
+        for the plaintext api_key. Agent-only path.'
+    FocusSpaceInfo:
+      properties:
+        space_id:
+          type: string
+          title: Space Id
+        description:
+          type: string
+          title: Description
+        status:
+          type: string
+          title: Status
+      type: object
+      required:
+      - space_id
+      - description
+      - status
+      title: FocusSpaceInfo
     HTTPValidationError:
       properties:
         detail:
@@ -2754,6 +5941,100 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    HeartbeatResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+      type: object
+      required:
+      - status
+      title: HeartbeatResponse
+    IdentityInfo:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        display_name:
+          type: string
+          title: Display Name
+        actor_type:
+          type: string
+          title: Actor Type
+        is_admin:
+          type: boolean
+          title: Is Admin
+      type: object
+      required:
+      - actor_id
+      - display_name
+      - actor_type
+      - is_admin
+      title: IdentityInfo
+    InstalledAgent:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        agent_name:
+          type: string
+          title: Agent Name
+        role:
+          type: string
+          title: Role
+        registration_ticket_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Registration Ticket Id
+      type: object
+      required:
+      - agent_id
+      - agent_name
+      - role
+      title: InstalledAgent
+    Invite:
+      properties:
+        invite_id:
+          type: string
+          title: Invite Id
+        code:
+          type: string
+          title: Code
+        tenant_id:
+          type: string
+          title: Tenant Id
+        created_by:
+          type: string
+          title: Created By
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        max_uses:
+          type: integer
+          title: Max Uses
+          default: 1
+        uses:
+          type: integer
+          title: Uses
+          default: 0
+        expires_at:
+          type: string
+          title: Expires At
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - invite_id
+      - code
+      - tenant_id
+      - created_by
+      - expires_at
+      - created_at
+      title: Invite
     JoinSpaceRequest:
       properties:
         participant_id:
@@ -2780,6 +6061,637 @@ components:
       - participant_id
       - name
       title: JoinSpaceRequest
+    JoinSpaceResponse:
+      properties:
+        status:
+          type: string
+          title: Status
+        participant:
+          $ref: '#/components/schemas/Participant'
+      type: object
+      required:
+      - status
+      - participant
+      title: JoinSpaceResponse
+    ListThreadsResponse:
+      properties:
+        threads:
+          items:
+            $ref: '#/components/schemas/ThreadSummary'
+          type: array
+          title: Threads
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+      type: object
+      required:
+      - threads
+      title: ListThreadsResponse
+    LoginRequest:
+      properties:
+        email:
+          type: string
+          maxLength: 200
+          minLength: 3
+          title: Email
+        password:
+          type: string
+          maxLength: 72
+          minLength: 8
+          title: Password
+      type: object
+      required:
+      - email
+      - password
+      title: LoginRequest
+    MarkThreadReadRequest:
+      properties:
+        event_id:
+          type: string
+          title: Event Id
+      type: object
+      required:
+      - event_id
+      title: MarkThreadReadRequest
+      description: 'POST /api/spaces/{space_id}/threads/{thread_id}/read body.
+
+
+        Deliberately does NOT accept actor_id — the calling route derives
+
+        the authenticated actor from request context (QA FA-QA-2 security
+
+        fence; spec § 9 invariant 7).'
+    OAuthAuthorizationServerMetadata:
+      properties:
+        issuer:
+          type: string
+          title: Issuer
+        authorization_endpoint:
+          type: string
+          title: Authorization Endpoint
+        token_endpoint:
+          type: string
+          title: Token Endpoint
+        registration_endpoint:
+          type: string
+          title: Registration Endpoint
+        revocation_endpoint:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revocation Endpoint
+        response_types_supported:
+          items:
+            type: string
+          type: array
+          title: Response Types Supported
+        grant_types_supported:
+          items:
+            type: string
+          type: array
+          title: Grant Types Supported
+        token_endpoint_auth_methods_supported:
+          items:
+            type: string
+          type: array
+          title: Token Endpoint Auth Methods Supported
+        code_challenge_methods_supported:
+          items:
+            type: string
+          type: array
+          title: Code Challenge Methods Supported
+        scopes_supported:
+          items:
+            type: string
+          type: array
+          title: Scopes Supported
+        service_documentation:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Service Documentation
+      type: object
+      required:
+      - issuer
+      - authorization_endpoint
+      - token_endpoint
+      - registration_endpoint
+      - response_types_supported
+      - grant_types_supported
+      - token_endpoint_auth_methods_supported
+      - code_challenge_methods_supported
+      - scopes_supported
+      title: OAuthAuthorizationServerMetadata
+      description: RFC 8414 Authorization Server Metadata.
+    OAuthAuthorizeInfo:
+      properties:
+        client_id:
+          type: string
+          title: Client Id
+        client_name:
+          type: string
+          title: Client Name
+        redirect_uri:
+          type: string
+          title: Redirect Uri
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+        state:
+          type: string
+          title: State
+        code_challenge:
+          type: string
+          title: Code Challenge
+        csrf_nonce:
+          type: string
+          title: Csrf Nonce
+      type: object
+      required:
+      - client_id
+      - client_name
+      - redirect_uri
+      - scopes
+      - state
+      - code_challenge
+      - csrf_nonce
+      title: OAuthAuthorizeInfo
+      description: 'Consent-screen data for SvelteKit loader (AH-d).
+
+        JSON variant of what AH-a''s HTML handler previously rendered.'
+    OAuthDisconnectResponse:
+      properties:
+        revoked:
+          type: integer
+          title: Revoked
+      type: object
+      required:
+      - revoked
+      title: OAuthDisconnectResponse
+      description: Response from POST /api/actors/me/oauth-grants/{client_id}/disconnect
+        (AH-d).
+    OAuthGrantSummary:
+      properties:
+        client_id:
+          type: string
+          title: Client Id
+        client_name:
+          type: string
+          title: Client Name
+        connected_at:
+          type: string
+          title: Connected At
+        last_used_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Used At
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+      type: object
+      required:
+      - client_id
+      - client_name
+      - connected_at
+      - last_used_at
+      - scopes
+      title: OAuthGrantSummary
+      description: 'Aggregated OAuth grant for /api/actors/me/oauth-grants. One row
+
+        per (user_id, client_id); represents the user-visible ''connected app''.'
+    OAuthProtectedResourceMetadata:
+      properties:
+        resource:
+          type: string
+          title: Resource
+        authorization_servers:
+          items:
+            type: string
+          type: array
+          title: Authorization Servers
+        scopes_supported:
+          items:
+            type: string
+          type: array
+          title: Scopes Supported
+        bearer_methods_supported:
+          items:
+            type: string
+          type: array
+          title: Bearer Methods Supported
+      type: object
+      required:
+      - resource
+      - authorization_servers
+      - scopes_supported
+      title: OAuthProtectedResourceMetadata
+      description: MCP 2025-03-26 Protected Resource Metadata.
+    OAuthRegisterResponse:
+      properties:
+        client_id:
+          type: string
+          title: Client Id
+        client_id_issued_at:
+          type: integer
+          title: Client Id Issued At
+        client_secret_expires_at:
+          type: integer
+          title: Client Secret Expires At
+          default: 0
+        client_name:
+          type: string
+          title: Client Name
+        redirect_uris:
+          items:
+            type: string
+          type: array
+          title: Redirect Uris
+        token_endpoint_auth_method:
+          type: string
+          title: Token Endpoint Auth Method
+        grant_types:
+          items:
+            type: string
+          type: array
+          title: Grant Types
+        response_types:
+          items:
+            type: string
+          type: array
+          title: Response Types
+        scope:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scope
+      type: object
+      required:
+      - client_id
+      - client_id_issued_at
+      - client_name
+      - redirect_uris
+      - token_endpoint_auth_method
+      - grant_types
+      - response_types
+      title: OAuthRegisterResponse
+      description: RFC 7591 Dynamic Client Registration response body.
+    OAuthTokenResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        refresh_token:
+          type: string
+          title: Refresh Token
+        token_type:
+          type: string
+          title: Token Type
+          default: Bearer
+        expires_in:
+          type: integer
+          title: Expires In
+        scope:
+          type: string
+          title: Scope
+      type: object
+      required:
+      - access_token
+      - refresh_token
+      - expires_in
+      - scope
+      title: OAuthTokenResponse
+    OkResponse:
+      properties:
+        ok:
+          type: boolean
+          title: Ok
+      type: object
+      required:
+      - ok
+      title: OkResponse
+    OrientationResponse:
+      properties:
+        identity:
+          $ref: '#/components/schemas/IdentityInfo'
+        focus_space:
+          anyOf:
+          - $ref: '#/components/schemas/FocusSpaceInfo'
+          - type: 'null'
+        unread_mentions:
+          type: integer
+          title: Unread Mentions
+        last_status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Status
+        participants:
+          items:
+            $ref: '#/components/schemas/ParticipantInfo'
+          type: array
+          title: Participants
+        context:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context
+      type: object
+      required:
+      - identity
+      - focus_space
+      - unread_mentions
+      - last_status
+      - participants
+      - context
+      title: OrientationResponse
+    Participant:
+      properties:
+        participant_id:
+          type: string
+          title: Participant Id
+        name:
+          type: string
+          title: Name
+        participant_type:
+          type: string
+          title: Participant Type
+        joined_at:
+          type: string
+          title: Joined At
+        agent_adapter:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Adapter
+        actor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Actor Id
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+        status_updated_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status Updated At
+        last_seen_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Seen At
+        last_active_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Active At
+        stall_state:
+          anyOf:
+          - type: string
+            enum:
+            - active
+            - idle
+            - stuck
+            - dead
+          - type: 'null'
+          title: Stall State
+        adapter_last_heartbeat_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Adapter Last Heartbeat At
+        tool_calls_last_minute:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Tool Calls Last Minute
+        error_rate_last_minute:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Error Rate Last Minute
+        transcript_activity_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Transcript Activity At
+      type: object
+      required:
+      - participant_id
+      - name
+      - participant_type
+      - joined_at
+      title: Participant
+    ParticipantActivity:
+      properties:
+        participant_id:
+          type: string
+          title: Participant Id
+        name:
+          type: string
+          title: Name
+        participant_type:
+          type: string
+          title: Participant Type
+        event_count:
+          type: integer
+          title: Event Count
+        last_active:
+          type: string
+          title: Last Active
+        summary_events:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Summary Events
+      type: object
+      required:
+      - participant_id
+      - name
+      - participant_type
+      - event_count
+      - last_active
+      - summary_events
+      title: ParticipantActivity
+    ParticipantInfo:
+      properties:
+        participant_id:
+          type: string
+          title: Participant Id
+        name:
+          type: string
+          title: Name
+        participant_type:
+          type: string
+          title: Participant Type
+        status:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Status
+      type: object
+      required:
+      - participant_id
+      - name
+      - participant_type
+      title: ParticipantInfo
+    PauseAllRequest:
+      properties:
+        space_id:
+          type: string
+          pattern: ^spc_[a-z0-9]+$
+          title: Space Id
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - space_id
+      - reason
+      title: PauseAllRequest
+      description: Pause every agent in a single space.
+    PauseRequest:
+      properties:
+        agent_id:
+          type: string
+          pattern: ^agt_[a-z0-9]+$
+          title: Agent Id
+        space_id:
+          type: string
+          pattern: ^spc_[a-z0-9]+$
+          title: Space Id
+        reason:
+          type: string
+          maxLength: 500
+          minLength: 1
+          title: Reason
+      type: object
+      required:
+      - agent_id
+      - space_id
+      - reason
+      title: PauseRequest
+      description: 'Per-agent pause. ``space_id`` required (F-SCOPING-CP1-WS-IS-SPACE-SCOPED:
+
+        AH-f WS is per-(actor, space); cross-space pause is CP-future).'
+    PauseResponse:
+      properties:
+        paused:
+          items:
+            type: string
+          type: array
+          title: Paused
+        offline:
+          items:
+            type: string
+          type: array
+          title: Offline
+        signal_id:
+          type: string
+          title: Signal Id
+        audit_event_id:
+          type: string
+          title: Audit Event Id
+      type: object
+      required:
+      - paused
+      - offline
+      - signal_id
+      - audit_event_id
+      title: PauseResponse
+      description: 'Partial-success response (inv 6). ``offline`` lists targets whose
+
+        WS was not connected (AH-f ``is_connected=False``) or whose publish
+
+        failed.'
+    PersonalAccessToken:
+      properties:
+        pat_id:
+          type: string
+          title: Pat Id
+        name:
+          type: string
+          title: Name
+        token_prefix:
+          type: string
+          title: Token Prefix
+        created_at:
+          type: string
+          title: Created At
+        last_used_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Used At
+        revoked_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Revoked At
+      type: object
+      required:
+      - pat_id
+      - name
+      - token_prefix
+      - created_at
+      title: PersonalAccessToken
+      description: 'Personal access token metadata (never the plaintext).
+
+
+        Run P. Plaintext is returned exactly once at creation via the POST
+
+        response; all subsequent reads return metadata only.'
+    PostCompactUpdateRequest:
+      properties:
+        post_compact_summary:
+          type: string
+          maxLength: 102400
+          title: Post Compact Summary
+        post_compact_at:
+          type: string
+          format: date-time
+          title: Post Compact At
+        post_compact_token_count:
+          type: integer
+          minimum: 0.0
+          title: Post Compact Token Count
+      type: object
+      required:
+      - post_compact_summary
+      - post_compact_at
+      - post_compact_token_count
+      title: PostCompactUpdateRequest
+    PostCompactUpdateResponse:
+      properties:
+        archive_id:
+          type: string
+          title: Archive Id
+        paired:
+          type: boolean
+          title: Paired
+        post_compact_at:
+          type: string
+          format: date-time
+          title: Post Compact At
+      type: object
+      required:
+      - archive_id
+      - paired
+      - post_compact_at
+      title: PostCompactUpdateResponse
     PostResponseRequest:
       properties:
         agent_id:
@@ -2818,6 +6730,86 @@ components:
       - agent_name
       - text
       title: PostResponseRequest
+    PromptRuleResponse:
+      properties:
+        rule_id:
+          type: string
+          title: Rule Id
+        space_id:
+          type: string
+          title: Space Id
+        name:
+          type: string
+          title: Name
+        rule_type:
+          type: string
+          title: Rule Type
+        enabled:
+          type: boolean
+          title: Enabled
+        condition_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Condition Type
+        threshold_secs:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Threshold Secs
+        target_actor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Target Actor Id
+        target_role:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Target Role
+        prompt_text:
+          type: string
+          title: Prompt Text
+        cooldown_secs:
+          type: integer
+          title: Cooldown Secs
+        last_fired_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Fired At
+        fire_count:
+          type: integer
+          title: Fire Count
+        created_by:
+          type: string
+          title: Created By
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - rule_id
+      - space_id
+      - name
+      - rule_type
+      - enabled
+      - condition_type
+      - threshold_secs
+      - target_actor_id
+      - target_role
+      - prompt_text
+      - cooldown_secs
+      - last_fired_at
+      - fire_count
+      - created_by
+      - created_at
+      title: PromptRuleResponse
+      description: 'Pydantic shadow of core.stores.alarm_store.AlarmRule.to_dict().
+
+        See D-DATACLASS-SHADOW-NOT-REWRITE — the dataclass is not rewritten;
+
+        this model mirrors its to_dict() output for the HTTP response layer.'
     ProposeDecisionRequest:
       properties:
         proposed_by:
@@ -2839,6 +6831,105 @@ components:
       - proposed_by
       - text
       title: ProposeDecisionRequest
+    PulseRequest:
+      properties:
+        pulse_vocab_version:
+          type: integer
+          maximum: 1.0
+          minimum: 1.0
+          title: Pulse Vocab Version
+          default: 1
+        last_active_at:
+          type: string
+          format: date-time
+          title: Last Active At
+        adapter_last_heartbeat_at:
+          type: string
+          format: date-time
+          title: Adapter Last Heartbeat At
+        tool_calls_last_minute:
+          type: integer
+          maximum: 600.0
+          minimum: 0.0
+          title: Tool Calls Last Minute
+        error_rate_last_minute:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Error Rate Last Minute
+        transcript_activity_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Transcript Activity At
+        session_start:
+          type: boolean
+          title: Session Start
+          default: false
+        session_end:
+          type: boolean
+          title: Session End
+          default: false
+        parse_health:
+          type: string
+          enum:
+          - ok
+          - degraded
+          title: Parse Health
+          default: ok
+      type: object
+      required:
+      - last_active_at
+      - adapter_last_heartbeat_at
+      - tool_calls_last_minute
+      - error_rate_last_minute
+      title: PulseRequest
+      description: Activity Pulse payload (D-AP-S2). Actor identity derives from auth
+        context.
+    PulseResponse:
+      properties:
+        status:
+          type: string
+          const: ok
+          title: Status
+          default: ok
+      type: object
+      title: PulseResponse
+    Question:
+      properties:
+        question_id:
+          type: string
+          title: Question Id
+        space_id:
+          type: string
+          title: Space Id
+        asked_by:
+          type: string
+          title: Asked By
+        text:
+          type: string
+          title: Text
+        status:
+          type: string
+          title: Status
+          default: open
+        assigned_to:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Assigned To
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - question_id
+      - space_id
+      - asked_by
+      - text
+      - created_at
+      title: Question
     RedeemInviteRequest:
       properties:
         code:
@@ -2853,12 +6944,123 @@ components:
           type: string
           maxLength: 200
           title: Email
+        password:
+          anyOf:
+          - type: string
+            maxLength: 72
+          - type: 'null'
+          title: Password
       type: object
       required:
       - code
       - display_name
       - email
       title: RedeemInviteRequest
+    RedeemInviteResponse:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        display_name:
+          type: string
+          title: Display Name
+        actor_type:
+          type: string
+          title: Actor Type
+        sponsor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sponsor Id
+        tenant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+        is_admin:
+          type: boolean
+          title: Is Admin
+          default: false
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        agent_profile:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Agent Profile
+        api_key_prefix:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Api Key Prefix
+        default_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Space Id
+        is_connected:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Connected
+        focus_space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Focus Space Id
+        metadata:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Metadata
+        last_seen_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Seen At
+        created_at:
+          type: string
+          title: Created At
+        updated_at:
+          type: string
+          title: Updated At
+        oauth_scopes:
+          anyOf:
+          - items:
+              type: string
+            type: array
+          - type: 'null'
+          title: Oauth Scopes
+        oauth_client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Oauth Client Id
+        tenant_name:
+          type: string
+          title: Tenant Name
+        session:
+          type: boolean
+          title: Session
+      type: object
+      required:
+      - actor_id
+      - display_name
+      - actor_type
+      - created_at
+      - updated_at
+      - tenant_name
+      - session
+      title: RedeemInviteResponse
+      description: 'Actor fields plus invite-redemption metadata. Returned once by
+
+        POST /api/invites/redeem; all other Actor-returning routes use the
+
+        base Actor model.'
     RegisterActorRequest:
       properties:
         display_name:
@@ -2892,6 +7094,123 @@ components:
       required:
       - display_name
       title: RegisterActorRequest
+    RegisterArchetypeVersionRequest:
+      properties:
+        version:
+          type: string
+          title: Version
+        git_ref:
+          type: string
+          title: Git Ref
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - version
+      - git_ref
+      title: RegisterArchetypeVersionRequest
+      description: 'Body for POST /api/team-archetypes/<archetype_id>/versions (TE-2).
+
+
+        `version` is validated against semver grammar at the store layer;
+
+        `git_ref` against the SHA / refs-tag grammar. `git_url` and
+
+        `visibility` are inherited from the archetype''s first version.'
+    RegistrationTicketExchangeResponse:
+      properties:
+        actor_id:
+          type: string
+          title: Actor Id
+        api_key:
+          type: string
+          title: Api Key
+        display_name:
+          type: string
+          title: Display Name
+        actor_type:
+          type: string
+          title: Actor Type
+        sponsor_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sponsor Id
+        tenant_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tenant Id
+        api_key_prefix:
+          type: string
+          title: Api Key Prefix
+      type: object
+      required:
+      - actor_id
+      - api_key
+      - display_name
+      - actor_type
+      - api_key_prefix
+      title: RegistrationTicketExchangeResponse
+      description: 'SEC-5 ticket-exchange response. Returned by POST
+
+        /api/registration-tickets/{ticket_id}/exchange. Contains the
+
+        plaintext api_key + agent metadata. Cache-Control: no-store.'
+    ReleaseAgentResponse:
+      properties:
+        agent_id:
+          type: string
+          title: Agent Id
+        status:
+          type: string
+          title: Status
+      type: object
+      required:
+      - agent_id
+      - status
+      title: ReleaseAgentResponse
+    RequestResetRequest:
+      properties:
+        email:
+          type: string
+          maxLength: 200
+          minLength: 3
+          title: Email
+      type: object
+      required:
+      - email
+      title: RequestResetRequest
+    RequestResetResponse:
+      properties:
+        status:
+          type: string
+          const: check_your_email_if_verified
+          title: Status
+      type: object
+      required:
+      - status
+      title: RequestResetResponse
+    ResetPasswordRequest:
+      properties:
+        token:
+          type: string
+          maxLength: 500
+          minLength: 10
+          title: Token
+        new_password:
+          type: string
+          maxLength: 72
+          minLength: 8
+          title: New Password
+      type: object
+      required:
+      - token
+      - new_password
+      title: ResetPasswordRequest
     ResolveDecisionRequest:
       properties:
         resolved_by:
@@ -2912,6 +7231,56 @@ components:
       - resolved_by
       - resolution
       title: ResolveDecisionRequest
+    SearchResult:
+      properties:
+        event_id:
+          type: string
+          title: Event Id
+        space_id:
+          type: string
+          title: Space Id
+        speaker_name:
+          type: string
+          title: Speaker Name
+        speaker_type:
+          type: string
+          title: Speaker Type
+        text:
+          type: string
+          title: Text
+        timestamp:
+          type: string
+          title: Timestamp
+        rank:
+          type: number
+          title: Rank
+      type: object
+      required:
+      - event_id
+      - space_id
+      - speaker_name
+      - speaker_type
+      - text
+      - timestamp
+      - rank
+      title: SearchResult
+    SessionCountResponse:
+      properties:
+        ws:
+          type: integer
+          title: Ws
+        mcp:
+          type: integer
+          title: Mcp
+        total:
+          type: integer
+          title: Total
+      type: object
+      required:
+      - ws
+      - mcp
+      - total
+      title: SessionCountResponse
     SetFocusRequest:
       properties:
         actor_ids:
@@ -2929,6 +7298,707 @@ components:
       required:
       - actor_ids
       title: SetFocusRequest
+    SetFocusResponse:
+      properties:
+        updated:
+          items:
+            type: string
+          type: array
+          title: Updated
+        space_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Space Id
+      type: object
+      required:
+      - updated
+      - space_id
+      title: SetFocusResponse
+    SetPasswordRequest:
+      properties:
+        current_password:
+          anyOf:
+          - type: string
+            maxLength: 72
+          - type: 'null'
+          title: Current Password
+        new_password:
+          type: string
+          maxLength: 72
+          minLength: 8
+          title: New Password
+      type: object
+      required:
+      - new_password
+      title: SetPasswordRequest
+    SpaceInfo:
+      properties:
+        space_id:
+          type: string
+          title: Space Id
+        description:
+          type: string
+          title: Description
+          default: ''
+        status:
+          type: string
+          title: Status
+          default: active
+        links:
+          items:
+            type: string
+          type: array
+          title: Links
+          default: []
+        created_at:
+          type: string
+          title: Created At
+        ended_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Ended At
+      type: object
+      required:
+      - space_id
+      - created_at
+      title: SpaceInfo
+    SpaceLink:
+      properties:
+        link_id:
+          type: string
+          title: Link Id
+        source_id:
+          type: string
+          title: Source Id
+        target_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Target Id
+        target_uri:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Target Uri
+        link_type:
+          type: string
+          title: Link Type
+        attributes:
+          additionalProperties: true
+          type: object
+          title: Attributes
+          default: {}
+        created_by:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Created By
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - link_id
+      - source_id
+      - link_type
+      - created_at
+      title: SpaceLink
+    SpaceStatus:
+      properties:
+        space_id:
+          type: string
+          title: Space Id
+        description:
+          type: string
+          title: Description
+          default: ''
+        status:
+          type: string
+          title: Status
+          default: active
+        links:
+          items:
+            type: string
+          type: array
+          title: Links
+          default: []
+        started_at:
+          type: string
+          title: Started At
+        participants:
+          items:
+            $ref: '#/components/schemas/Participant'
+          type: array
+          title: Participants
+        event_count:
+          type: integer
+          title: Event Count
+        last_event_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Event At
+      type: object
+      required:
+      - space_id
+      - started_at
+      - participants
+      - event_count
+      title: SpaceStatus
+    Summary:
+      properties:
+        summary_id:
+          type: string
+          title: Summary Id
+        space_id:
+          type: string
+          title: Space Id
+        window_start:
+          type: string
+          title: Window Start
+        window_end:
+          type: string
+          title: Window End
+        summary_text:
+          type: string
+          title: Summary Text
+        event_count:
+          type: integer
+          title: Event Count
+        model:
+          type: string
+          title: Model
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - summary_id
+      - space_id
+      - window_start
+      - window_end
+      - summary_text
+      - event_count
+      - model
+      - created_at
+      title: Summary
+    Team:
+      properties:
+        team_id:
+          type: string
+          title: Team Id
+        tenant_id:
+          type: string
+          title: Tenant Id
+        git_url:
+          type: string
+          title: Git Url
+        archetype_id:
+          type: string
+          title: Archetype Id
+        archetype_version:
+          type: string
+          title: Archetype Version
+        diverged_at_commit:
+          type: string
+          title: Diverged At Commit
+        created_at:
+          type: string
+          title: Created At
+        last_synced_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Synced At
+        last_head_commit:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Head Commit
+      type: object
+      required:
+      - team_id
+      - tenant_id
+      - git_url
+      - archetype_id
+      - archetype_version
+      - diverged_at_commit
+      - created_at
+      title: Team
+      description: A concrete team instance — a git repo + DB index row.
+    TeamArchetype:
+      properties:
+        archetype_id:
+          type: string
+          title: Archetype Id
+        version:
+          type: string
+          title: Version
+        git_url:
+          type: string
+          title: Git Url
+        git_ref:
+          type: string
+          title: Git Ref
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        published_by:
+          type: string
+          title: Published By
+        published_at:
+          type: string
+          title: Published At
+        visibility:
+          type: string
+          title: Visibility
+      type: object
+      required:
+      - archetype_id
+      - version
+      - git_url
+      - git_ref
+      - published_by
+      - published_at
+      - visibility
+      title: TeamArchetype
+      description: 'Catalog row for a team archetype. Content lives in git; this
+
+        row is the discovery index per D-DB-INDEX-NOT-CONTENT.'
+    TeamBundleBody:
+      properties:
+        team_id:
+          type: string
+          pattern: ^tem_[a-z0-9]+$
+          title: Team Id
+        git_url:
+          type: string
+          title: Git Url
+        archetype_id:
+          type: string
+          title: Archetype Id
+        archetype_version:
+          type: string
+          title: Archetype Version
+        diverged_at_commit:
+          type: string
+          title: Diverged At Commit
+      type: object
+      required:
+      - team_id
+      - git_url
+      - archetype_id
+      - archetype_version
+      - diverged_at_commit
+      title: TeamBundleBody
+      description: Team identity + archetype triple — the only populated section in
+        MVP.
+    TeamExportBundle:
+      properties:
+        bundle_version:
+          type: string
+          const: '1'
+          title: Bundle Version
+          default: '1'
+        exported_at:
+          type: string
+          format: date-time
+          title: Exported At
+        team:
+          $ref: '#/components/schemas/TeamBundleBody'
+        db_state:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Db State
+        transcript_archive:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          title: Transcript Archive
+        export_manifest:
+          $ref: '#/components/schemas/ExportManifest'
+      type: object
+      required:
+      - exported_at
+      - team
+      - export_manifest
+      title: TeamExportBundle
+      description: 'Exported team bundle. `db_state` + `transcript_archive` reserved-null
+
+        for TE-4 forward-compatibility; non-null at import → 400.'
+    TeamImportRequest:
+      properties:
+        bundle:
+          $ref: '#/components/schemas/TeamExportBundle'
+        fork_mode:
+          type: string
+          const: cold
+          title: Fork Mode
+          default: cold
+        git_url_override:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Git Url Override
+      type: object
+      required:
+      - bundle
+      title: TeamImportRequest
+      description: 'Import body; `fork_mode="cold"` only in MVP. No caller-supplied
+
+        team_id field — D-TE3-IMPORT-GENERATES-TEAM-ID (invariant 6).'
+    TeamImportResponse:
+      properties:
+        new_team_id:
+          type: string
+          title: New Team Id
+        new_team_url:
+          type: string
+          title: New Team Url
+        source_bundle_checksum:
+          type: string
+          title: Source Bundle Checksum
+      type: object
+      required:
+      - new_team_id
+      - new_team_url
+      - source_bundle_checksum
+      title: TeamImportResponse
+    TeamInstallRequest:
+      properties:
+        archetype_id:
+          type: string
+          maxLength: 100
+          title: Archetype Id
+          default: ''
+        archetype_version:
+          type: string
+          maxLength: 50
+          title: Archetype Version
+          default: ''
+        template:
+          anyOf:
+          - type: string
+            maxLength: 100
+          - type: 'null'
+          title: Template
+        space_id:
+          anyOf:
+          - type: string
+            maxLength: 64
+          - type: 'null'
+          title: Space Id
+        customization:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Customization
+      type: object
+      title: TeamInstallRequest
+    TeamInstallResponse:
+      properties:
+        team_id:
+          type: string
+          title: Team Id
+        tenant_id:
+          type: string
+          title: Tenant Id
+        installation_id:
+          type: string
+          title: Installation Id
+        agents:
+          items:
+            $ref: '#/components/schemas/InstalledAgent'
+          type: array
+          title: Agents
+      type: object
+      required:
+      - team_id
+      - tenant_id
+      - installation_id
+      - agents
+      title: TeamInstallResponse
+    Tenant:
+      properties:
+        tenant_id:
+          type: string
+          title: Tenant Id
+        name:
+          type: string
+          title: Name
+        schema_name:
+          type: string
+          title: Schema Name
+        status:
+          type: string
+          title: Status
+          default: active
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - tenant_id
+      - name
+      - schema_name
+      - created_at
+      title: Tenant
+    Thread:
+      properties:
+        thread_id:
+          type: string
+          title: Thread Id
+        space_id:
+          type: string
+          title: Space Id
+        parent_event_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Event Id
+        subject:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Subject
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - thread_id
+      - space_id
+      - created_at
+      title: Thread
+    ThreadSummary:
+      properties:
+        thread_id:
+          type: string
+          title: Thread Id
+        root_event_id:
+          type: string
+          title: Root Event Id
+        root_text_excerpt:
+          type: string
+          title: Root Text Excerpt
+        root_message_type:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Root Message Type
+        last_activity_at:
+          type: string
+          title: Last Activity At
+        participant_count:
+          type: integer
+          title: Participant Count
+        unread_count_for_actor:
+          type: integer
+          title: Unread Count For Actor
+        user_participated:
+          type: boolean
+          title: User Participated
+      type: object
+      required:
+      - thread_id
+      - root_event_id
+      - root_text_excerpt
+      - last_activity_at
+      - participant_count
+      - unread_count_for_actor
+      - user_participated
+      title: ThreadSummary
+      description: 'Thread metadata for paginated list view (UX-3).
+
+
+        Returned by GET /api/spaces/{space_id}/threads. Fields match
+
+        D-UX3-S5. `unread_count_for_actor` is scoped to the authenticated
+
+        actor (never exposes another actor''s read state).'
+    ThreadWithEvents:
+      properties:
+        thread:
+          $ref: '#/components/schemas/Thread'
+        events:
+          items:
+            $ref: '#/components/schemas/ContextEvent'
+          type: array
+          title: Events
+      type: object
+      required:
+      - thread
+      - events
+      title: ThreadWithEvents
+    TimerResponse:
+      properties:
+        timer_id:
+          type: string
+          title: Timer Id
+        tool_name:
+          type: string
+          title: Tool Name
+        tool_args:
+          additionalProperties: true
+          type: object
+          title: Tool Args
+        timer_type:
+          type: string
+          title: Timer Type
+        duration_secs:
+          type: integer
+          title: Duration Secs
+        next_fire_at:
+          type: string
+          title: Next Fire At
+        last_fired_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Last Fired At
+        fire_count:
+          type: integer
+          title: Fire Count
+        created_at:
+          type: string
+          title: Created At
+      type: object
+      required:
+      - timer_id
+      - tool_name
+      - tool_args
+      - timer_type
+      - duration_secs
+      - next_fire_at
+      - last_fired_at
+      - fire_count
+      - created_at
+      title: TimerResponse
+      description: 'Pydantic shadow of core.stores.timer_store.Timer.to_dict().
+
+        See D-DATACLASS-SHADOW-NOT-REWRITE.'
+    TranscriptArchive:
+      properties:
+        archive_id:
+          type: string
+          title: Archive Id
+        agent_id:
+          type: string
+          title: Agent Id
+        session_id:
+          type: string
+          title: Session Id
+        captured_at:
+          type: string
+          format: date-time
+          title: Captured At
+        compact_reason:
+          type: string
+          enum:
+          - manual
+          - auto
+          title: Compact Reason
+        pre_token_count:
+          type: integer
+          title: Pre Token Count
+        storage_url:
+          type: string
+          title: Storage Url
+        blob_size_bytes:
+          type: integer
+          title: Blob Size Bytes
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        paired:
+          type: boolean
+          title: Paired
+          default: false
+        post_compact_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Post Compact At
+      type: object
+      required:
+      - archive_id
+      - agent_id
+      - session_id
+      - captured_at
+      - compact_reason
+      - pre_token_count
+      - storage_url
+      - blob_size_bytes
+      - created_at
+      title: TranscriptArchive
+    TranscriptArchiveRequest:
+      properties:
+        session_id:
+          type: string
+          maxLength: 64
+          minLength: 8
+          title: Session Id
+        agent_id:
+          type: string
+          pattern: ^(agt|usr)_[A-Za-z0-9]+$
+          title: Agent Id
+        captured_at:
+          type: string
+          format: date-time
+          title: Captured At
+        compact_reason:
+          type: string
+          enum:
+          - manual
+          - auto
+          title: Compact Reason
+        pre_compact_token_count:
+          type: integer
+          minimum: 0.0
+          title: Pre Compact Token Count
+        transcript_blob:
+          type: string
+          format: base64
+          contentMediaType: application/octet-stream
+          title: Transcript Blob
+      type: object
+      required:
+      - session_id
+      - agent_id
+      - captured_at
+      - compact_reason
+      - pre_compact_token_count
+      - transcript_blob
+      title: TranscriptArchiveRequest
+    TranscriptArchiveResponse:
+      properties:
+        archive_id:
+          type: string
+          title: Archive Id
+        storage_url:
+          type: string
+          title: Storage Url
+        accepted_at:
+          type: string
+          format: date-time
+          title: Accepted At
+      type: object
+      required:
+      - archive_id
+      - storage_url
+      - accepted_at
+      title: TranscriptArchiveResponse
     UpdateActorRequest:
       properties:
         display_name:
@@ -3057,3 +8127,27 @@ components:
       - msg
       - type
       title: ValidationError
+    ErrorEnvelope:
+      properties:
+        code:
+          title: Code
+          type: string
+        message:
+          title: Message
+          type: string
+        request_id:
+          title: Request Id
+          type: string
+        detail:
+          anyOf:
+          - additionalProperties: true
+            type: object
+          - type: 'null'
+          default: null
+          title: Detail
+      required:
+      - code
+      - message
+      - request_id
+      title: ErrorEnvelope
+      type: object

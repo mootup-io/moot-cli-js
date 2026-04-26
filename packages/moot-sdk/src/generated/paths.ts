@@ -83,7 +83,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get Space */
+        get: operations["get_space_api_spaces__space_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -370,6 +371,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/agents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register Agent
+         * @description Provision a single agent sponsored by the calling human.
+         *
+         *     Tenant + sponsor derived from `actor` (the auth token) per
+         *     D-TENANT-FROM-TOKEN. Body MUST NOT carry tenant_id or sponsor_id;
+         *     Pydantic strips unknown fields silently.
+         */
+        post: operations["register_agent_api_agents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/actors/me": {
         parameters: {
             query?: never;
@@ -407,6 +432,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/actors/me/pulse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Actor Pulse
+         * @description Activity Pulse — record passive-observation pulse for the calling actor.
+         *
+         *     Actor identity derives EXCLUSIVELY from the request-auth context per
+         *     D-AP-S2 (mirror of ``me/heartbeat``). The request body MUST NOT carry
+         *     an ``actor_id``; Pydantic strips unknown fields silently. Cross-actor
+         *     write is structurally impossible (per-actor write fence; UX-3 carry).
+         */
+        post: operations["actor_pulse_api_actors_me_pulse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/actors/me/spaces": {
         parameters: {
             query?: never;
@@ -438,6 +488,50 @@ export interface paths {
         get: operations["get_my_agents_api_actors_me_agents_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/actors/me/oauth-grants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get My Oauth Grants
+         * @description List active OAuth grants for the current user, aggregated by client (AH-d).
+         */
+        get: operations["get_my_oauth_grants_api_actors_me_oauth_grants_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/actors/me/oauth-grants/{client_id}/disconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Disconnect Oauth Grant
+         * @description Revoke every active grant chain for (current_user, client_id) (AH-d).
+         *
+         *     Session-authenticated convenience endpoint backing the /settings/access
+         *     Disconnect button. Cross-user attempts are silently impossible — the SQL
+         *     is filtered by session user.
+         */
+        post: operations["disconnect_oauth_grant_api_actors_me_oauth_grants__client_id__disconnect_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -575,6 +669,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/actors/{actor_id}/session-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Session Count
+         * @description Return live WS + MCP connection cardinalities for an agent (A-2).
+         *
+         *     Tenant-scoped: caller must share the target's tenant. Hover-card reads
+         *     this on demand; no caching.
+         */
+        get: operations["get_session_count_api_actors__actor_id__session_count_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/personal-access-tokens": {
         parameters: {
             query?: never;
@@ -630,18 +747,42 @@ export interface paths {
         put?: never;
         /**
          * Auth Request
-         * @description Email-driven session issuance (alpha: no email delivery).
+         * @description Send a magic-link email (Run AE-2).
          *
-         *     Existing user: issues a new session, sets cookie, returns {created: false}.
-         *     New user with valid invite_code: creates user, issues session, returns
-         *     {created: true}. Alpha compromise: the cookie is set directly in the
-         *     response instead of sending a link to the user's email.
+         *     Flipped from casual-auth alpha: no session, no cookie. Mints a
+         *     magic-link token under a caller-managed transaction, then sends the
+         *     link via the AE-1 email primitive. Response echoes ``email`` so the
+         *     UI can display a "check_your_email" state.
          *
-         *     R6 Stage E: the whole flow runs under a single caller-managed
-         *     transaction via auth_service.issue_magic_link_session(conn, ...).
-         *     Cookie is set AFTER commit.
+         *     Rate-limited by ``rl_auth_public`` (10/min per-IP; limiter also gates
+         *     ``/auth/redeem``).
          */
         post: operations["auth_request_auth_request_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/redeem": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Auth Redeem
+         * @description Redeem a magic-link token (Run AE-2).
+         *
+         *     Atomic transaction: validates + consumes token + creates session +
+         *     sets ``email_verified_at`` (write-once-if-null). Sets session cookie
+         *     on success and redirects to the user's ``default_space_id`` (or
+         *     ``/spaces`` if none).
+         */
+        get: operations["auth_redeem_auth_redeem_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -662,6 +803,111 @@ export interface paths {
          * @description Revoke the current session. Idempotent: safe to call without a cookie.
          */
         post: operations["auth_logout_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Auth Login
+         * @description Password-based login (Run AE-3). Rate-limited via `rl_auth_public`
+         *     (10/min per-IP).
+         *
+         *     BH-2-B: response time padded to FLOOR_MS via try/finally so 401 fast-paths
+         *     do not leak timing.
+         */
+        post: operations["auth_login_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/request-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Auth Request Reset
+         * @description Request a password-reset email (Run AE-3).
+         *
+         *     Inv 10 constant-shape response regardless of email existence or
+         *     verification status. Email is only sent for known + verified users.
+         *
+         *     BH-2-B: try/finally pad to FLOOR_MS (defends both verified-email and
+         *     unknown-email paths).
+         */
+        post: operations["auth_request_reset_auth_request_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Auth Reset
+         * @description Redeem a password-reset token (Run AE-3).
+         *
+         *     Atomic: consume token + revoke-all sessions + set password + mint
+         *     fresh session. Inv 2 ordering: revoke-all precedes create-new.
+         *
+         *     BH-2-A: validate_password_strength(new_password) before hash; 400 on weak.
+         *     BH-2-B: try/finally pad to FLOOR_MS.
+         */
+        post: operations["auth_reset_auth_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/set-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Auth Set Password
+         * @description Set or change the password for the authenticated user (Run AE-3).
+         *
+         *     If the user already has a password_hash, ``current_password`` is
+         *     required and must verify. If not, ``current_password`` is ignored
+         *     (first-time set path).
+         *
+         *     BH-2-A: validate_password_strength(req.new_password) before hash.
+         *     BH-2-D: if session-authed AND session age > 5min AND existing_hash present,
+         *             require non-empty current_password; else 403 step_up_required.
+         *             Bearer/PAT/OAuth-authed callers skip step-up (F-BH2-STEP-UP-BEARER).
+         */
+        post: operations["auth_set_password_auth_set_password_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -689,6 +935,13 @@ export interface paths {
          *     ``create_session_for_user`` fails mid-flow, the actor insert, tenant
          *     assignment, and invite usage increment all roll back atomically.
          *     Cookie is only set after the transaction commits.
+         *
+         *     BH-3-A: accepts an optional ``password`` (zxcvbn-validated, bcrypt-hashed,
+         *     written in the same transaction as the actor insert). Auto-issues a
+         *     magic-link to the redeemed email post-commit (regardless of password) so
+         *     the user has a verification path on first sign-in. T-5 partial-success:
+         *     a magic-link send failure is logged + response continues 200; not rolled
+         *     back.
          */
         post: operations["redeem_invite_api_invites_redeem_post"];
         delete?: never;
@@ -704,7 +957,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Threads Route
+         * @description UX-3 D-UX3-S1: paginated thread metadata for the space.
+         */
+        get: operations["list_threads_route_api_spaces__space_id__threads_get"];
         put?: never;
         /** Create Thread */
         post: operations["create_thread_api_spaces__space_id__threads_post"];
@@ -728,6 +985,29 @@ export interface paths {
         get: operations["get_thread_api_spaces__space_id__threads__event_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/spaces/{space_id}/threads/{thread_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Thread Read Route
+         * @description UX-3 D-UX3-S8: upsert the authenticated actor's read pointer.
+         *
+         *     QA FA-QA-2 / spec § 9 invariant 7: `actor_id` derives from the
+         *     `require_actor` dependency — NEVER from request body.
+         */
+        post: operations["mark_thread_read_route_api_spaces__space_id__threads__thread_id__read_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1206,10 +1486,739 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/oauth/authorize-info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Oauth Authorize Info
+         * @description JSON variant of consent-screen data for the SvelteKit loader (AH-d).
+         *
+         *     Same validation as the deleted GET /oauth/authorize HTML handler:
+         *     response_type=code, code_challenge_method=S256, client_id decodes,
+         *     redirect_uri is registered, session present, CSRF nonce issued.
+         */
+        get: operations["oauth_authorize_info_api_oauth_authorize_info_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/oauth/authorize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Oauth Authorize Post */
+        post: operations["oauth_authorize_post_oauth_authorize_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/oauth/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Oauth Token */
+        post: operations["oauth_token_oauth_token_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/oauth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Oauth Register */
+        post: operations["oauth_register_oauth_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/.well-known/oauth-authorization-server": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Oauth Authorization Server Metadata */
+        get: operations["oauth_authorization_server_metadata__well_known_oauth_authorization_server_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/.well-known/oauth-protected-resource": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Oauth Protected Resource Metadata */
+        get: operations["oauth_protected_resource_metadata__well_known_oauth_protected_resource_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/oauth/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Oauth Revoke */
+        post: operations["oauth_revoke_oauth_revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/team-archetypes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Team Archetypes
+         * @description List archetypes visible to the caller's tenant (public + own).
+         */
+        get: operations["list_team_archetypes_api_team_archetypes_get"];
+        put?: never;
+        /**
+         * Create Archetype Route
+         * @description Fork a team as a new archetype (v1.0.0).
+         *
+         *     Caller authenticated (any actor type). `archetype_id` must match
+         *     the tenant-namespaced grammar. Non-admin callers cannot create
+         *     under `mootup/*`. `git_url` is caller-specified (OQ-TE2-2 rec (c));
+         *     mootup does not host git for derived tenants.
+         */
+        post: operations["create_archetype_route_api_team_archetypes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/team-archetypes/{archetype_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Archetype Versions Route
+         * @description List versions of a single archetype, semver-descending.
+         *
+         *     Returns 404 for an unknown OR visibility-hidden archetype (no
+         *     info-leak discriminator per AE-D-NO-AUTO-CREATE pattern). Admins
+         *     without a tenant binding see only `public` rows (aligns with the
+         *     mootup-staff bypass — they don't need tenant_id to read catalog).
+         */
+        get: operations["list_archetype_versions_route_api_team_archetypes__archetype_id__versions_get"];
+        put?: never;
+        /**
+         * Register Archetype Version Route
+         * @description Register a new version of an existing archetype.
+         *
+         *     Caller must be tenant-admin of the archetype's owning tenant, OR
+         *     ``actor.is_admin`` for ``mootup/*`` archetypes (the admin path does
+         *     not require a tenant binding — `mootup_staff` is modelled as
+         *     `is_admin` at alpha per spec § 4.5). Overwrite is always rejected;
+         *     gap-fill within major is allowed (OQ-TE2-4 rec (c)).
+         */
+        post: operations["register_archetype_version_route_api_team_archetypes__archetype_id__versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Team */
+        get: operations["get_team_api_teams__team_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Team
+         * @description Create a team from an archetype reference. tenant_id from auth token.
+         */
+        post: operations["create_team_api_teams_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/install": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Install Team Route
+         * @description Atomic: create team + mint N agents with keys + record installation.
+         *
+         *     Auth: ``team:install`` scope when OAuth-authed; non-OAuth paths (session,
+         *     PAT, API key) pass via ``require_scope``'s ``oauth_scopes is None``
+         *     branch, per D-TEAM-INSTALL-NOT-AUTO-GRANTED.
+         */
+        post: operations["install_team_route_api_teams_install_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/{team_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Team Route
+         * @description Export a team as a cold-forkable bundle. Visibility gated by the
+         *     archetype's visibility setting (TE-1/TE-2 pattern).
+         */
+        get: operations["export_team_route_api_teams__team_id__export_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/teams/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import Team Route
+         * @description Import a team bundle → cold-fork (new team_id in caller's tenant).
+         *     Admin-only (`actor.is_admin`); D-TE3-IMPORT-GENERATES-TEAM-ID +
+         *     D-TE3-IMPORT-NOT-IDEMPOTENT.
+         */
+        post: operations["import_team_route_api_teams_import_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/transcripts/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Archive Transcript
+         * @description Store a PreCompact transcript blob durably in S3 + DB.
+         *
+         *     Pre-flight order: body-size → tenant guard → agent spoof → clock skew
+         *     → rate limit → gzip sniff. S3 put then DB insert; DB `UniqueViolation`
+         *     on retry maps to idempotent-success (§ 10 deviation).
+         */
+        post: operations["archive_transcript_api_transcripts_archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/actors/me/transcripts/archives": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List My Archives
+         * @description List caller's own archives. Authenticated-actor scoped.
+         *
+         *     TA-2: `paired` query filter surfaces only paired / only unpaired
+         *     archives when set; response rows carry `paired` + `post_compact_at`.
+         */
+        get: operations["list_my_archives_api_actors_me_transcripts_archives_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/transcripts/archive/{archive_id}/post-compact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Post Compact Update
+         * @description Attach a post-compact summary to an existing TA-1 archive row.
+         *
+         *     Pre-flight order mirrors TA-1's archive_transcript: body-size (413)
+         *     → tenant guard → archive_id decode (404) → clock skew ±5 min (422)
+         *     → rate limit (429) → conditional UPDATE. First-write-wins semantics
+         *     via `WHERE post_compact_at IS NULL`; second write → 409 (invariant 4).
+         */
+        post: operations["post_compact_update_api_transcripts_archive__archive_id__post_compact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/control/pause-all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause All Route
+         * @description Pause every agent in ``req.space_id``. Admin-only
+         *     (D-CP1-AUTHZ-IS-ADMIN-ONLY). Protocol doc:
+         *     docs/reference/control-plane-protocol.md.
+         */
+        post: operations["pause_all_route_api_control_pause_all_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/control/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause Route
+         * @description Pause a single agent. Admin-only. ``space_id`` required
+         *     (F-SCOPING-CP1-WS-IS-SPACE-SCOPED, invariant 11). Protocol doc:
+         *     docs/reference/control-plane-protocol.md.
+         */
+        post: operations["pause_route_api_control_pause_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/email/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive Email Event
+         * @description Receive an outbound-mail event notification (provider-neutral).
+         *
+         *     Authentication: provider-signature verification is the integrity gate;
+         *     verified inside event_parser.parse_sns_notification before any side
+         *     effects. Subscription handshake messages are detected via the envelope
+         *     Type discriminator and the SubscribeURL is fetched to confirm.
+         */
+        post: operations["receive_email_event_api_email_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/registration-tickets/{ticket_id}/exchange": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exchange Registration Ticket
+         * @description Exchange a registration ticket for the bound agent's plaintext api_key.
+         *
+         *     No auth header required: the ticket_id is single-use + time-limited
+         *     + cryptographically random (D-SEC-5-EXCHANGE-AUTH-1).
+         *
+         *     Anti-abuse: rl_low (5/min) by client IP.
+         */
+        post: operations["exchange_registration_ticket_api_registration_tickets__ticket_id__exchange_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/mcp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * MCP SSE event stream
+         * @description Server-sent-events stream for the MCP session; bearer auth required. Supports Last-Event-ID resumption per MCP 2025-03-26.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description SSE stream opened */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Missing or invalid bearer */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description ErrorEnvelope */
+                "4XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description ErrorEnvelope */
+                "5XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * MCP JSON-RPC frame
+         * @description Streamable HTTP transport (MCP 2025-03-26). Body is an opaque JSON-RPC envelope; bearer auth required.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description JSON-RPC response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Missing or invalid bearer */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description ErrorEnvelope */
+                "4XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+                /** @description ErrorEnvelope */
+                "5XX": {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ErrorEnvelope"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActivityDigest */
+        ActivityDigest: {
+            /** Since */
+            since: string;
+            /** Participants */
+            participants: components["schemas"]["ParticipantActivity"][];
+        };
+        /** Actor */
+        Actor: {
+            /** Actor Id */
+            actor_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Sponsor Id */
+            sponsor_id?: string | null;
+            /** Tenant Id */
+            tenant_id?: string | null;
+            /**
+             * Is Admin
+             * @default false
+             */
+            is_admin: boolean;
+            /** Email */
+            email?: string | null;
+            /** Agent Profile */
+            agent_profile?: string | null;
+            /** Api Key Prefix */
+            api_key_prefix?: string | null;
+            /** Default Space Id */
+            default_space_id?: string | null;
+            /** Is Connected */
+            is_connected?: boolean | null;
+            /** Focus Space Id */
+            focus_space_id?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Last Seen At */
+            last_seen_at?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Oauth Scopes */
+            oauth_scopes?: string[] | null;
+            /** Oauth Client Id */
+            oauth_client_id?: string | null;
+        };
+        /**
+         * ActorCredentialsResponse
+         * @description Actor fields plus a plaintext api_key. Returned by register_actor
+         *     and rotate_key on the HUMAN path only (operator-clarification 2026-04-26:
+         *     SEC-5 ticket flow is agent-only; humans authenticate via password /
+         *     magic-link / PAT and are not the SEC-1 audit HIGH #19 transcript
+         *     risk surface). The api_key is only emitted at creation / rotation;
+         *     all other reads of the actor use the base Actor model.
+         */
+        ActorCredentialsResponse: {
+            /** Actor Id */
+            actor_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Sponsor Id */
+            sponsor_id?: string | null;
+            /** Tenant Id */
+            tenant_id?: string | null;
+            /**
+             * Is Admin
+             * @default false
+             */
+            is_admin: boolean;
+            /** Email */
+            email?: string | null;
+            /** Agent Profile */
+            agent_profile?: string | null;
+            /** Api Key Prefix */
+            api_key_prefix?: string | null;
+            /** Default Space Id */
+            default_space_id?: string | null;
+            /** Is Connected */
+            is_connected?: boolean | null;
+            /** Focus Space Id */
+            focus_space_id?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Last Seen At */
+            last_seen_at?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Oauth Scopes */
+            oauth_scopes?: string[] | null;
+            /** Oauth Client Id */
+            oauth_client_id?: string | null;
+            /** Api Key */
+            api_key: string;
+        };
+        /**
+         * ActorRegistrationTicketResponse
+         * @description Agent metadata + a single-use registration ticket (SEC-5).
+         *
+         *     Returned by register_actor (agent path), register_agent, rotate_key
+         *     (agent target), in place of plaintext api_key. Caller (typically a CLI
+         *     harness shell process) exchanges the ticket via
+         *     POST /api/registration-tickets/{ticket_id}/exchange to retrieve the
+         *     plaintext api_key. No plaintext credentials in this response —
+         *     architectural fix for SEC-1 audit HIGH #19.
+         */
+        ActorRegistrationTicketResponse: {
+            /** Actor Id */
+            actor_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Sponsor Id */
+            sponsor_id?: string | null;
+            /** Tenant Id */
+            tenant_id?: string | null;
+            /**
+             * Is Admin
+             * @default false
+             */
+            is_admin: boolean;
+            /** Email */
+            email?: string | null;
+            /** Agent Profile */
+            agent_profile?: string | null;
+            /** Api Key Prefix */
+            api_key_prefix?: string | null;
+            /** Default Space Id */
+            default_space_id?: string | null;
+            /** Is Connected */
+            is_connected?: boolean | null;
+            /** Focus Space Id */
+            focus_space_id?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Last Seen At */
+            last_seen_at?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Oauth Scopes */
+            oauth_scopes?: string[] | null;
+            /** Oauth Client Id */
+            oauth_client_id?: string | null;
+            /** Registration Ticket Id */
+            registration_ticket_id: string;
+        };
         /** AddEventRequest */
         AddEventRequest: {
             /** Speaker Id */
@@ -1245,6 +2254,8 @@ export interface components {
             speaker_name: string;
             /** Text */
             text: string;
+            /** Parent Event Id */
+            parent_event_id?: string | null;
             /** Thread Id */
             thread_id?: string | null;
             /** Metadata */
@@ -1279,6 +2290,32 @@ export interface components {
             /** Is Admin */
             is_admin: boolean;
         };
+        /**
+         * Archive
+         * @description Session archive. Stored in session_archives table; shape matches
+         *     archive_store._row_to_dict output.
+         */
+        Archive: {
+            /** Archive Id */
+            archive_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Actor Id */
+            actor_id: string;
+            /** Session Id */
+            session_id: string;
+            /** Summary */
+            summary: string;
+            /**
+             * Metadata
+             * @default {}
+             */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /** Created At */
+            created_at: string;
+        };
         /** AskQuestionRequest */
         AskQuestionRequest: {
             /** Asked By */
@@ -1288,6 +2325,22 @@ export interface components {
             /** Assigned To */
             assigned_to?: string | null;
         };
+        /**
+         * AuthRedeemResponse
+         * @description Post-redeem response (for AJAX callers; HTML path 302 redirects).
+         */
+        AuthRedeemResponse: {
+            /** Actor Id */
+            actor_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Tenant Id */
+            tenant_id: string | null;
+            /** Tenant Name */
+            tenant_name: string;
+            /** Default Space Id */
+            default_space_id: string | null;
+        };
         /** AuthRequestRequest */
         AuthRequestRequest: {
             /** Email */
@@ -1296,6 +2349,122 @@ export interface components {
             invite_code?: string | null;
             /** Display Name */
             display_name?: string | null;
+        };
+        /**
+         * AuthRequestResponse
+         * @description Run AE-2: shape flipped from casual-auth alpha.
+         *
+         *     ``/auth/request`` returns only the check-your-email status + echoed email.
+         *     Session is created at ``/auth/redeem`` after magic-link click.
+         */
+        AuthRequestResponse: {
+            /**
+             * Status
+             * @constant
+             */
+            status: "check_your_email";
+            /** Email */
+            email: string;
+        };
+        /** Body_oauth_authorize_post_oauth_authorize_post */
+        Body_oauth_authorize_post_oauth_authorize_post: {
+            /** Client Id */
+            client_id: string;
+            /** Redirect Uri */
+            redirect_uri: string;
+            /** State */
+            state: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /** Code Challenge */
+            code_challenge: string;
+            /** Code Challenge Method */
+            code_challenge_method: string;
+            /** Csrf */
+            csrf: string;
+            /** Decision */
+            decision: string;
+        };
+        /** Body_oauth_token_oauth_token_post */
+        Body_oauth_token_oauth_token_post: {
+            /** Grant Type */
+            grant_type: string;
+            /** Client Id */
+            client_id: string;
+            /** Code */
+            code?: string | null;
+            /** Redirect Uri */
+            redirect_uri?: string | null;
+            /** Code Verifier */
+            code_verifier?: string | null;
+            /** Refresh Token */
+            refresh_token?: string | null;
+            /** Scope */
+            scope?: string | null;
+        };
+        /** ContextEvent */
+        ContextEvent: {
+            /** Event Id */
+            event_id?: string;
+            /** Space Id */
+            space_id: string;
+            /** Speaker Id */
+            speaker_id: string;
+            /** Speaker Name */
+            speaker_name: string;
+            /** Speaker Type */
+            speaker_type: string;
+            /** Text */
+            text: string;
+            /** Timestamp */
+            timestamp?: string;
+            /** Parent Event Id */
+            parent_event_id?: string | null;
+            /** References */
+            references?: string[];
+            /** Thread Id */
+            thread_id?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /**
+         * CreateAgentRequest
+         * @description Body for POST /api/agents. Tenant + sponsor derived from auth token
+         *     per D-TENANT-FROM-TOKEN; body MUST NOT include `tenant_id` or
+         *     `sponsor_id` (T-4 sponsor-escalation defense).
+         */
+        CreateAgentRequest: {
+            /** Role */
+            role: string;
+            /** Agent Profile */
+            agent_profile?: string | null;
+        };
+        /**
+         * CreateArchetypeRequest
+         * @description Body for POST /api/team-archetypes (TE-2, fork-as-new-archetype).
+         *
+         *     Always inserts v1.0.0. `git_url` is caller-specified per
+         *     OQ-TE2-2 rec (c); mootup does not host git for derived tenants.
+         */
+        CreateArchetypeRequest: {
+            /** Archetype Id */
+            archetype_id: string;
+            /** Source Team Id */
+            source_team_id: string;
+            /**
+             * Visibility
+             * @default private
+             */
+            visibility: string;
+            /** Git Url */
+            git_url: string;
+            /** Description */
+            description?: string | null;
         };
         /** CreateArchiveRequest */
         CreateArchiveRequest: {
@@ -1331,6 +2500,27 @@ export interface components {
         CreatePatRequest: {
             /** Name */
             name: string;
+        };
+        /**
+         * CreatePatResponse
+         * @description PersonalAccessToken plus the plaintext token (one-shot reveal on
+         *     creation). The token field is absent from all read paths.
+         */
+        CreatePatResponse: {
+            /** Pat Id */
+            pat_id: string;
+            /** Name */
+            name: string;
+            /** Token Prefix */
+            token_prefix: string;
+            /** Created At */
+            created_at: string;
+            /** Last Used At */
+            last_used_at?: string | null;
+            /** Revoked At */
+            revoked_at?: string | null;
+            /** Token */
+            token: string;
         };
         /** CreatePromptRuleRequest */
         CreatePromptRuleRequest: {
@@ -1371,6 +2561,29 @@ export interface components {
              */
             links: string[];
         };
+        /** CreateSpaceResponse */
+        CreateSpaceResponse: {
+            /** Space Id */
+            space_id: string;
+            status: components["schemas"]["SpaceStatus"];
+        };
+        /**
+         * CreateTeamRequest
+         * @description Body for POST /api/teams. tenant_id deliberately absent —
+         *     decoded from auth token per D-TENANT-FROM-TOKEN.
+         */
+        CreateTeamRequest: {
+            /** Team Id Slug */
+            team_id_slug: string;
+            /** Git Url */
+            git_url: string;
+            /** Archetype Id */
+            archetype_id: string;
+            /** Archetype Version */
+            archetype_version: string;
+            /** Diverged At Commit */
+            diverged_at_commit: string;
+        };
         /** CreateThreadRequest */
         CreateThreadRequest: {
             /** Parent Event Id */
@@ -1394,10 +2607,154 @@ export interface components {
             /** Duration Secs */
             duration_secs: number;
         };
+        /** Decision */
+        Decision: {
+            /** Decision Id */
+            decision_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Proposed By */
+            proposed_by: string;
+            /** Text */
+            text: string;
+            /**
+             * Status
+             * @default proposed
+             */
+            status: string;
+            /** Resolved By */
+            resolved_by?: string | null;
+            /** Resolved At */
+            resolved_at?: string | null;
+            /** Resolution */
+            resolution?: string | null;
+            /** Question Id */
+            question_id?: string | null;
+            /** Created At */
+            created_at: string;
+        };
+        /** DecisionSummary */
+        DecisionSummary: {
+            /** Total */
+            total: number;
+            /** By Status */
+            by_status: {
+                [key: string]: number;
+            };
+            /** Decisions */
+            decisions: components["schemas"]["Decision"][];
+        };
+        /** DeleteActorResponse */
+        DeleteActorResponse: {
+            /** Status */
+            status: string;
+            /** Actor Id */
+            actor_id: string;
+        };
+        /** DeleteInviteResponse */
+        DeleteInviteResponse: {
+            /** Status */
+            status: string;
+            /** Invite Id */
+            invite_id: string;
+        };
+        /** DeleteLinkResponse */
+        DeleteLinkResponse: {
+            /** Status */
+            status: string;
+            /** Link Id */
+            link_id: string;
+        };
+        /** DeletedResponse */
+        DeletedResponse: {
+            /** Deleted */
+            deleted: boolean;
+        };
+        /** ExportManifest */
+        ExportManifest: {
+            /** Checksum */
+            checksum: string;
+            /** Bundle Size Bytes */
+            bundle_size_bytes: number;
+        };
+        /**
+         * FirstKeyTicketResponse
+         * @description SEC-5: replaces FirstKeyResponse. Caller exchanges the ticket
+         *     for the plaintext api_key. Agent-only path.
+         */
+        FirstKeyTicketResponse: {
+            /** Registration Ticket Id */
+            registration_ticket_id: string;
+            /** Agent Id */
+            agent_id: string;
+        };
+        /** FocusSpaceInfo */
+        FocusSpaceInfo: {
+            /** Space Id */
+            space_id: string;
+            /** Description */
+            description: string;
+            /** Status */
+            status: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HeartbeatResponse */
+        HeartbeatResponse: {
+            /** Status */
+            status: string;
+        };
+        /** IdentityInfo */
+        IdentityInfo: {
+            /** Actor Id */
+            actor_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Is Admin */
+            is_admin: boolean;
+        };
+        /** InstalledAgent */
+        InstalledAgent: {
+            /** Agent Id */
+            agent_id: string;
+            /** Agent Name */
+            agent_name: string;
+            /** Role */
+            role: string;
+            /** Registration Ticket Id */
+            registration_ticket_id?: string | null;
+        };
+        /** Invite */
+        Invite: {
+            /** Invite Id */
+            invite_id: string;
+            /** Code */
+            code: string;
+            /** Tenant Id */
+            tenant_id: string;
+            /** Created By */
+            created_by: string;
+            /** Email */
+            email?: string | null;
+            /**
+             * Max Uses
+             * @default 1
+             */
+            max_uses: number;
+            /**
+             * Uses
+             * @default 0
+             */
+            uses: number;
+            /** Expires At */
+            expires_at: string;
+            /** Created At */
+            created_at: string;
         };
         /** JoinSpaceRequest */
         JoinSpaceRequest: {
@@ -1412,6 +2769,332 @@ export interface components {
             participant_type: string;
             /** Agent Adapter */
             agent_adapter?: string | null;
+        };
+        /** JoinSpaceResponse */
+        JoinSpaceResponse: {
+            /** Status */
+            status: string;
+            participant: components["schemas"]["Participant"];
+        };
+        /** ListThreadsResponse */
+        ListThreadsResponse: {
+            /** Threads */
+            threads: components["schemas"]["ThreadSummary"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+        };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /**
+         * MarkThreadReadRequest
+         * @description POST /api/spaces/{space_id}/threads/{thread_id}/read body.
+         *
+         *     Deliberately does NOT accept actor_id — the calling route derives
+         *     the authenticated actor from request context (QA FA-QA-2 security
+         *     fence; spec § 9 invariant 7).
+         */
+        MarkThreadReadRequest: {
+            /** Event Id */
+            event_id: string;
+        };
+        /**
+         * OAuthAuthorizationServerMetadata
+         * @description RFC 8414 Authorization Server Metadata.
+         */
+        OAuthAuthorizationServerMetadata: {
+            /** Issuer */
+            issuer: string;
+            /** Authorization Endpoint */
+            authorization_endpoint: string;
+            /** Token Endpoint */
+            token_endpoint: string;
+            /** Registration Endpoint */
+            registration_endpoint: string;
+            /** Revocation Endpoint */
+            revocation_endpoint?: string | null;
+            /** Response Types Supported */
+            response_types_supported: string[];
+            /** Grant Types Supported */
+            grant_types_supported: string[];
+            /** Token Endpoint Auth Methods Supported */
+            token_endpoint_auth_methods_supported: string[];
+            /** Code Challenge Methods Supported */
+            code_challenge_methods_supported: string[];
+            /** Scopes Supported */
+            scopes_supported: string[];
+            /** Service Documentation */
+            service_documentation?: string | null;
+        };
+        /**
+         * OAuthAuthorizeInfo
+         * @description Consent-screen data for SvelteKit loader (AH-d).
+         *     JSON variant of what AH-a's HTML handler previously rendered.
+         */
+        OAuthAuthorizeInfo: {
+            /** Client Id */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Redirect Uri */
+            redirect_uri: string;
+            /** Scopes */
+            scopes: string[];
+            /** State */
+            state: string;
+            /** Code Challenge */
+            code_challenge: string;
+            /** Csrf Nonce */
+            csrf_nonce: string;
+        };
+        /**
+         * OAuthDisconnectResponse
+         * @description Response from POST /api/actors/me/oauth-grants/{client_id}/disconnect (AH-d).
+         */
+        OAuthDisconnectResponse: {
+            /** Revoked */
+            revoked: number;
+        };
+        /**
+         * OAuthGrantSummary
+         * @description Aggregated OAuth grant for /api/actors/me/oauth-grants. One row
+         *     per (user_id, client_id); represents the user-visible 'connected app'.
+         */
+        OAuthGrantSummary: {
+            /** Client Id */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Connected At */
+            connected_at: string;
+            /** Last Used At */
+            last_used_at: string | null;
+            /** Scopes */
+            scopes: string[];
+        };
+        /**
+         * OAuthProtectedResourceMetadata
+         * @description MCP 2025-03-26 Protected Resource Metadata.
+         */
+        OAuthProtectedResourceMetadata: {
+            /** Resource */
+            resource: string;
+            /** Authorization Servers */
+            authorization_servers: string[];
+            /** Scopes Supported */
+            scopes_supported: string[];
+            /** Bearer Methods Supported */
+            bearer_methods_supported?: string[];
+        };
+        /**
+         * OAuthRegisterResponse
+         * @description RFC 7591 Dynamic Client Registration response body.
+         */
+        OAuthRegisterResponse: {
+            /** Client Id */
+            client_id: string;
+            /** Client Id Issued At */
+            client_id_issued_at: number;
+            /**
+             * Client Secret Expires At
+             * @default 0
+             */
+            client_secret_expires_at: number;
+            /** Client Name */
+            client_name: string;
+            /** Redirect Uris */
+            redirect_uris: string[];
+            /** Token Endpoint Auth Method */
+            token_endpoint_auth_method: string;
+            /** Grant Types */
+            grant_types: string[];
+            /** Response Types */
+            response_types: string[];
+            /** Scope */
+            scope?: string | null;
+        };
+        /** OAuthTokenResponse */
+        OAuthTokenResponse: {
+            /** Access Token */
+            access_token: string;
+            /** Refresh Token */
+            refresh_token: string;
+            /**
+             * Token Type
+             * @default Bearer
+             */
+            token_type: string;
+            /** Expires In */
+            expires_in: number;
+            /** Scope */
+            scope: string;
+        };
+        /** OkResponse */
+        OkResponse: {
+            /** Ok */
+            ok: boolean;
+        };
+        /** OrientationResponse */
+        OrientationResponse: {
+            identity: components["schemas"]["IdentityInfo"];
+            focus_space: components["schemas"]["FocusSpaceInfo"] | null;
+            /** Unread Mentions */
+            unread_mentions: number;
+            /** Last Status */
+            last_status: string | null;
+            /** Participants */
+            participants: components["schemas"]["ParticipantInfo"][];
+            /** Context */
+            context: string | null;
+        };
+        /** Participant */
+        Participant: {
+            /** Participant Id */
+            participant_id: string;
+            /** Name */
+            name: string;
+            /** Participant Type */
+            participant_type: string;
+            /** Joined At */
+            joined_at: string;
+            /** Agent Adapter */
+            agent_adapter?: string | null;
+            /** Actor Id */
+            actor_id?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Status Updated At */
+            status_updated_at?: string | null;
+            /** Last Seen At */
+            last_seen_at?: string | null;
+            /** Last Active At */
+            last_active_at?: string | null;
+            /** Stall State */
+            stall_state?: ("active" | "idle" | "stuck" | "dead") | null;
+            /** Adapter Last Heartbeat At */
+            adapter_last_heartbeat_at?: string | null;
+            /** Tool Calls Last Minute */
+            tool_calls_last_minute?: number | null;
+            /** Error Rate Last Minute */
+            error_rate_last_minute?: number | null;
+            /** Transcript Activity At */
+            transcript_activity_at?: string | null;
+        };
+        /** ParticipantActivity */
+        ParticipantActivity: {
+            /** Participant Id */
+            participant_id: string;
+            /** Name */
+            name: string;
+            /** Participant Type */
+            participant_type: string;
+            /** Event Count */
+            event_count: number;
+            /** Last Active */
+            last_active: string;
+            /** Summary Events */
+            summary_events: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ParticipantInfo */
+        ParticipantInfo: {
+            /** Participant Id */
+            participant_id: string;
+            /** Name */
+            name: string;
+            /** Participant Type */
+            participant_type: string;
+            /** Status */
+            status?: string | null;
+        };
+        /**
+         * PauseAllRequest
+         * @description Pause every agent in a single space.
+         */
+        PauseAllRequest: {
+            /** Space Id */
+            space_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * PauseRequest
+         * @description Per-agent pause. ``space_id`` required (F-SCOPING-CP1-WS-IS-SPACE-SCOPED:
+         *     AH-f WS is per-(actor, space); cross-space pause is CP-future).
+         */
+        PauseRequest: {
+            /** Agent Id */
+            agent_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * PauseResponse
+         * @description Partial-success response (inv 6). ``offline`` lists targets whose
+         *     WS was not connected (AH-f ``is_connected=False``) or whose publish
+         *     failed.
+         */
+        PauseResponse: {
+            /** Paused */
+            paused: string[];
+            /** Offline */
+            offline: string[];
+            /** Signal Id */
+            signal_id: string;
+            /** Audit Event Id */
+            audit_event_id: string;
+        };
+        /**
+         * PersonalAccessToken
+         * @description Personal access token metadata (never the plaintext).
+         *
+         *     Run P. Plaintext is returned exactly once at creation via the POST
+         *     response; all subsequent reads return metadata only.
+         */
+        PersonalAccessToken: {
+            /** Pat Id */
+            pat_id: string;
+            /** Name */
+            name: string;
+            /** Token Prefix */
+            token_prefix: string;
+            /** Created At */
+            created_at: string;
+            /** Last Used At */
+            last_used_at?: string | null;
+            /** Revoked At */
+            revoked_at?: string | null;
+        };
+        /** PostCompactUpdateRequest */
+        PostCompactUpdateRequest: {
+            /** Post Compact Summary */
+            post_compact_summary: string;
+            /**
+             * Post Compact At
+             * Format: date-time
+             */
+            post_compact_at: string;
+            /** Post Compact Token Count */
+            post_compact_token_count: number;
+        };
+        /** PostCompactUpdateResponse */
+        PostCompactUpdateResponse: {
+            /** Archive Id */
+            archive_id: string;
+            /** Paired */
+            paired: boolean;
+            /**
+             * Post Compact At
+             * Format: date-time
+             */
+            post_compact_at: string;
         };
         /** PostResponseRequest */
         PostResponseRequest: {
@@ -1430,6 +3113,44 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /**
+         * PromptRuleResponse
+         * @description Pydantic shadow of core.stores.alarm_store.AlarmRule.to_dict().
+         *     See D-DATACLASS-SHADOW-NOT-REWRITE — the dataclass is not rewritten;
+         *     this model mirrors its to_dict() output for the HTTP response layer.
+         */
+        PromptRuleResponse: {
+            /** Rule Id */
+            rule_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Name */
+            name: string;
+            /** Rule Type */
+            rule_type: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Condition Type */
+            condition_type: string | null;
+            /** Threshold Secs */
+            threshold_secs: number | null;
+            /** Target Actor Id */
+            target_actor_id: string | null;
+            /** Target Role */
+            target_role: string | null;
+            /** Prompt Text */
+            prompt_text: string;
+            /** Cooldown Secs */
+            cooldown_secs: number;
+            /** Last Fired At */
+            last_fired_at: string | null;
+            /** Fire Count */
+            fire_count: number;
+            /** Created By */
+            created_by: string;
+            /** Created At */
+            created_at: string;
+        };
         /** ProposeDecisionRequest */
         ProposeDecisionRequest: {
             /** Proposed By */
@@ -1439,6 +3160,78 @@ export interface components {
             /** Question Id */
             question_id?: string | null;
         };
+        /**
+         * PulseRequest
+         * @description Activity Pulse payload (D-AP-S2). Actor identity derives from auth context.
+         */
+        PulseRequest: {
+            /**
+             * Pulse Vocab Version
+             * @default 1
+             */
+            pulse_vocab_version: number;
+            /**
+             * Last Active At
+             * Format: date-time
+             */
+            last_active_at: string;
+            /**
+             * Adapter Last Heartbeat At
+             * Format: date-time
+             */
+            adapter_last_heartbeat_at: string;
+            /** Tool Calls Last Minute */
+            tool_calls_last_minute: number;
+            /** Error Rate Last Minute */
+            error_rate_last_minute: number;
+            /** Transcript Activity At */
+            transcript_activity_at?: string | null;
+            /**
+             * Session Start
+             * @default false
+             */
+            session_start: boolean;
+            /**
+             * Session End
+             * @default false
+             */
+            session_end: boolean;
+            /**
+             * Parse Health
+             * @default ok
+             * @enum {string}
+             */
+            parse_health: "ok" | "degraded";
+        };
+        /** PulseResponse */
+        PulseResponse: {
+            /**
+             * Status
+             * @default ok
+             * @constant
+             */
+            status: "ok";
+        };
+        /** Question */
+        Question: {
+            /** Question Id */
+            question_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Asked By */
+            asked_by: string;
+            /** Text */
+            text: string;
+            /**
+             * Status
+             * @default open
+             */
+            status: string;
+            /** Assigned To */
+            assigned_to?: string | null;
+            /** Created At */
+            created_at: string;
+        };
         /** RedeemInviteRequest */
         RedeemInviteRequest: {
             /** Code */
@@ -1447,6 +3240,61 @@ export interface components {
             display_name: string;
             /** Email */
             email: string;
+            /** Password */
+            password?: string | null;
+        };
+        /**
+         * RedeemInviteResponse
+         * @description Actor fields plus invite-redemption metadata. Returned once by
+         *     POST /api/invites/redeem; all other Actor-returning routes use the
+         *     base Actor model.
+         */
+        RedeemInviteResponse: {
+            /** Actor Id */
+            actor_id: string;
+            /** Display Name */
+            display_name: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Sponsor Id */
+            sponsor_id?: string | null;
+            /** Tenant Id */
+            tenant_id?: string | null;
+            /**
+             * Is Admin
+             * @default false
+             */
+            is_admin: boolean;
+            /** Email */
+            email?: string | null;
+            /** Agent Profile */
+            agent_profile?: string | null;
+            /** Api Key Prefix */
+            api_key_prefix?: string | null;
+            /** Default Space Id */
+            default_space_id?: string | null;
+            /** Is Connected */
+            is_connected?: boolean | null;
+            /** Focus Space Id */
+            focus_space_id?: string | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            /** Last Seen At */
+            last_seen_at?: string | null;
+            /** Created At */
+            created_at: string;
+            /** Updated At */
+            updated_at: string;
+            /** Oauth Scopes */
+            oauth_scopes?: string[] | null;
+            /** Oauth Client Id */
+            oauth_client_id?: string | null;
+            /** Tenant Name */
+            tenant_name: string;
+            /** Session */
+            session: boolean;
         };
         /** RegisterActorRequest */
         RegisterActorRequest: {
@@ -1466,6 +3314,71 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /**
+         * RegisterArchetypeVersionRequest
+         * @description Body for POST /api/team-archetypes/<archetype_id>/versions (TE-2).
+         *
+         *     `version` is validated against semver grammar at the store layer;
+         *     `git_ref` against the SHA / refs-tag grammar. `git_url` and
+         *     `visibility` are inherited from the archetype's first version.
+         */
+        RegisterArchetypeVersionRequest: {
+            /** Version */
+            version: string;
+            /** Git Ref */
+            git_ref: string;
+            /** Description */
+            description?: string | null;
+        };
+        /**
+         * RegistrationTicketExchangeResponse
+         * @description SEC-5 ticket-exchange response. Returned by POST
+         *     /api/registration-tickets/{ticket_id}/exchange. Contains the
+         *     plaintext api_key + agent metadata. Cache-Control: no-store.
+         */
+        RegistrationTicketExchangeResponse: {
+            /** Actor Id */
+            actor_id: string;
+            /** Api Key */
+            api_key: string;
+            /** Display Name */
+            display_name: string;
+            /** Actor Type */
+            actor_type: string;
+            /** Sponsor Id */
+            sponsor_id?: string | null;
+            /** Tenant Id */
+            tenant_id?: string | null;
+            /** Api Key Prefix */
+            api_key_prefix: string;
+        };
+        /** ReleaseAgentResponse */
+        ReleaseAgentResponse: {
+            /** Agent Id */
+            agent_id: string;
+            /** Status */
+            status: string;
+        };
+        /** RequestResetRequest */
+        RequestResetRequest: {
+            /** Email */
+            email: string;
+        };
+        /** RequestResetResponse */
+        RequestResetResponse: {
+            /**
+             * Status
+             * @constant
+             */
+            status: "check_your_email_if_verified";
+        };
+        /** ResetPasswordRequest */
+        ResetPasswordRequest: {
+            /** Token */
+            token: string;
+            /** New Password */
+            new_password: string;
+        };
         /** ResolveDecisionRequest */
         ResolveDecisionRequest: {
             /** Resolved By */
@@ -1478,12 +3391,456 @@ export interface components {
              */
             status: string;
         };
+        /** SearchResult */
+        SearchResult: {
+            /** Event Id */
+            event_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Speaker Name */
+            speaker_name: string;
+            /** Speaker Type */
+            speaker_type: string;
+            /** Text */
+            text: string;
+            /** Timestamp */
+            timestamp: string;
+            /** Rank */
+            rank: number;
+        };
+        /** SessionCountResponse */
+        SessionCountResponse: {
+            /** Ws */
+            ws: number;
+            /** Mcp */
+            mcp: number;
+            /** Total */
+            total: number;
+        };
         /** SetFocusRequest */
         SetFocusRequest: {
             /** Actor Ids */
             actor_ids: string[];
             /** Space Id */
             space_id?: string | null;
+        };
+        /** SetFocusResponse */
+        SetFocusResponse: {
+            /** Updated */
+            updated: string[];
+            /** Space Id */
+            space_id: string | null;
+        };
+        /** SetPasswordRequest */
+        SetPasswordRequest: {
+            /** Current Password */
+            current_password?: string | null;
+            /** New Password */
+            new_password: string;
+        };
+        /** SpaceInfo */
+        SpaceInfo: {
+            /** Space Id */
+            space_id: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Status
+             * @default active
+             */
+            status: string;
+            /**
+             * Links
+             * @default []
+             */
+            links: string[];
+            /** Created At */
+            created_at: string;
+            /** Ended At */
+            ended_at?: string | null;
+        };
+        /** SpaceLink */
+        SpaceLink: {
+            /** Link Id */
+            link_id: string;
+            /** Source Id */
+            source_id: string;
+            /** Target Id */
+            target_id?: string | null;
+            /** Target Uri */
+            target_uri?: string | null;
+            /** Link Type */
+            link_type: string;
+            /**
+             * Attributes
+             * @default {}
+             */
+            attributes: {
+                [key: string]: unknown;
+            };
+            /** Created By */
+            created_by?: string | null;
+            /** Created At */
+            created_at: string;
+        };
+        /** SpaceStatus */
+        SpaceStatus: {
+            /** Space Id */
+            space_id: string;
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            /**
+             * Status
+             * @default active
+             */
+            status: string;
+            /**
+             * Links
+             * @default []
+             */
+            links: string[];
+            /** Started At */
+            started_at: string;
+            /** Participants */
+            participants: components["schemas"]["Participant"][];
+            /** Event Count */
+            event_count: number;
+            /** Last Event At */
+            last_event_at?: string | null;
+        };
+        /** Summary */
+        Summary: {
+            /** Summary Id */
+            summary_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Window Start */
+            window_start: string;
+            /** Window End */
+            window_end: string;
+            /** Summary Text */
+            summary_text: string;
+            /** Event Count */
+            event_count: number;
+            /** Model */
+            model: string;
+            /** Created At */
+            created_at: string;
+        };
+        /**
+         * Team
+         * @description A concrete team instance — a git repo + DB index row.
+         */
+        Team: {
+            /** Team Id */
+            team_id: string;
+            /** Tenant Id */
+            tenant_id: string;
+            /** Git Url */
+            git_url: string;
+            /** Archetype Id */
+            archetype_id: string;
+            /** Archetype Version */
+            archetype_version: string;
+            /** Diverged At Commit */
+            diverged_at_commit: string;
+            /** Created At */
+            created_at: string;
+            /** Last Synced At */
+            last_synced_at?: string | null;
+            /** Last Head Commit */
+            last_head_commit?: string | null;
+        };
+        /**
+         * TeamArchetype
+         * @description Catalog row for a team archetype. Content lives in git; this
+         *     row is the discovery index per D-DB-INDEX-NOT-CONTENT.
+         */
+        TeamArchetype: {
+            /** Archetype Id */
+            archetype_id: string;
+            /** Version */
+            version: string;
+            /** Git Url */
+            git_url: string;
+            /** Git Ref */
+            git_ref: string;
+            /** Description */
+            description?: string | null;
+            /** Published By */
+            published_by: string;
+            /** Published At */
+            published_at: string;
+            /** Visibility */
+            visibility: string;
+        };
+        /**
+         * TeamBundleBody
+         * @description Team identity + archetype triple — the only populated section in MVP.
+         */
+        TeamBundleBody: {
+            /** Team Id */
+            team_id: string;
+            /** Git Url */
+            git_url: string;
+            /** Archetype Id */
+            archetype_id: string;
+            /** Archetype Version */
+            archetype_version: string;
+            /** Diverged At Commit */
+            diverged_at_commit: string;
+        };
+        /**
+         * TeamExportBundle
+         * @description Exported team bundle. `db_state` + `transcript_archive` reserved-null
+         *     for TE-4 forward-compatibility; non-null at import → 400.
+         */
+        TeamExportBundle: {
+            /**
+             * Bundle Version
+             * @default 1
+             * @constant
+             */
+            bundle_version: "1";
+            /**
+             * Exported At
+             * Format: date-time
+             */
+            exported_at: string;
+            team: components["schemas"]["TeamBundleBody"];
+            /** Db State */
+            db_state?: {
+                [key: string]: unknown;
+            } | null;
+            /** Transcript Archive */
+            transcript_archive?: {
+                [key: string]: unknown;
+            } | null;
+            export_manifest: components["schemas"]["ExportManifest"];
+        };
+        /**
+         * TeamImportRequest
+         * @description Import body; `fork_mode="cold"` only in MVP. No caller-supplied
+         *     team_id field — D-TE3-IMPORT-GENERATES-TEAM-ID (invariant 6).
+         */
+        TeamImportRequest: {
+            bundle: components["schemas"]["TeamExportBundle"];
+            /**
+             * Fork Mode
+             * @default cold
+             * @constant
+             */
+            fork_mode: "cold";
+            /** Git Url Override */
+            git_url_override?: string | null;
+        };
+        /** TeamImportResponse */
+        TeamImportResponse: {
+            /** New Team Id */
+            new_team_id: string;
+            /** New Team Url */
+            new_team_url: string;
+            /** Source Bundle Checksum */
+            source_bundle_checksum: string;
+        };
+        /** TeamInstallRequest */
+        TeamInstallRequest: {
+            /**
+             * Archetype Id
+             * @default
+             */
+            archetype_id: string;
+            /**
+             * Archetype Version
+             * @default
+             */
+            archetype_version: string;
+            /** Template */
+            template?: string | null;
+            /** Space Id */
+            space_id?: string | null;
+            /** Customization */
+            customization?: {
+                [key: string]: string;
+            } | null;
+        };
+        /** TeamInstallResponse */
+        TeamInstallResponse: {
+            /** Team Id */
+            team_id: string;
+            /** Tenant Id */
+            tenant_id: string;
+            /** Installation Id */
+            installation_id: string;
+            /** Agents */
+            agents: components["schemas"]["InstalledAgent"][];
+        };
+        /** Tenant */
+        Tenant: {
+            /** Tenant Id */
+            tenant_id: string;
+            /** Name */
+            name: string;
+            /** Schema Name */
+            schema_name: string;
+            /**
+             * Status
+             * @default active
+             */
+            status: string;
+            /** Created At */
+            created_at: string;
+        };
+        /** Thread */
+        Thread: {
+            /** Thread Id */
+            thread_id: string;
+            /** Space Id */
+            space_id: string;
+            /** Parent Event Id */
+            parent_event_id?: string | null;
+            /** Subject */
+            subject?: string | null;
+            /** Created At */
+            created_at: string;
+        };
+        /**
+         * ThreadSummary
+         * @description Thread metadata for paginated list view (UX-3).
+         *
+         *     Returned by GET /api/spaces/{space_id}/threads. Fields match
+         *     D-UX3-S5. `unread_count_for_actor` is scoped to the authenticated
+         *     actor (never exposes another actor's read state).
+         */
+        ThreadSummary: {
+            /** Thread Id */
+            thread_id: string;
+            /** Root Event Id */
+            root_event_id: string;
+            /** Root Text Excerpt */
+            root_text_excerpt: string;
+            /** Root Message Type */
+            root_message_type?: string | null;
+            /** Last Activity At */
+            last_activity_at: string;
+            /** Participant Count */
+            participant_count: number;
+            /** Unread Count For Actor */
+            unread_count_for_actor: number;
+            /** User Participated */
+            user_participated: boolean;
+        };
+        /** ThreadWithEvents */
+        ThreadWithEvents: {
+            thread: components["schemas"]["Thread"];
+            /** Events */
+            events: components["schemas"]["ContextEvent"][];
+        };
+        /**
+         * TimerResponse
+         * @description Pydantic shadow of core.stores.timer_store.Timer.to_dict().
+         *     See D-DATACLASS-SHADOW-NOT-REWRITE.
+         */
+        TimerResponse: {
+            /** Timer Id */
+            timer_id: string;
+            /** Tool Name */
+            tool_name: string;
+            /** Tool Args */
+            tool_args: {
+                [key: string]: unknown;
+            };
+            /** Timer Type */
+            timer_type: string;
+            /** Duration Secs */
+            duration_secs: number;
+            /** Next Fire At */
+            next_fire_at: string;
+            /** Last Fired At */
+            last_fired_at: string | null;
+            /** Fire Count */
+            fire_count: number;
+            /** Created At */
+            created_at: string;
+        };
+        /** TranscriptArchive */
+        TranscriptArchive: {
+            /** Archive Id */
+            archive_id: string;
+            /** Agent Id */
+            agent_id: string;
+            /** Session Id */
+            session_id: string;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /**
+             * Compact Reason
+             * @enum {string}
+             */
+            compact_reason: "manual" | "auto";
+            /** Pre Token Count */
+            pre_token_count: number;
+            /** Storage Url */
+            storage_url: string;
+            /** Blob Size Bytes */
+            blob_size_bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Paired
+             * @default false
+             */
+            paired: boolean;
+            /** Post Compact At */
+            post_compact_at?: string | null;
+        };
+        /** TranscriptArchiveRequest */
+        TranscriptArchiveRequest: {
+            /** Session Id */
+            session_id: string;
+            /** Agent Id */
+            agent_id: string;
+            /**
+             * Captured At
+             * Format: date-time
+             */
+            captured_at: string;
+            /**
+             * Compact Reason
+             * @enum {string}
+             */
+            compact_reason: "manual" | "auto";
+            /** Pre Compact Token Count */
+            pre_compact_token_count: number;
+            /**
+             * Transcript Blob
+             * Format: base64
+             */
+            transcript_blob: string;
+        };
+        /** TranscriptArchiveResponse */
+        TranscriptArchiveResponse: {
+            /** Archive Id */
+            archive_id: string;
+            /** Storage Url */
+            storage_url: string;
+            /**
+             * Accepted At
+             * Format: date-time
+             */
+            accepted_at: string;
         };
         /** UpdateActorRequest */
         UpdateActorRequest: {
@@ -1543,6 +3900,22 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** ErrorEnvelope */
+        ErrorEnvelope: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Detail
+             * @default null
+             */
+            detail: {
+                [key: string]: unknown;
+            } | null;
+        };
     };
     responses: never;
     parameters: never;
@@ -1570,6 +3943,24 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1603,6 +3994,24 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     list_spaces_api_spaces_get: {
@@ -1623,9 +4032,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["SpaceInfo"][];
                 };
             };
             /** @description Validation Error */
@@ -1635,6 +4042,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1658,9 +4083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CreateSpaceResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1670,6 +4093,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1691,9 +4132,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SpaceStatus"];
                 };
             };
             /** @description Validation Error */
@@ -1703,6 +4142,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_space_api_spaces__space_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                space_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SpaceInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1728,9 +4234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SpaceInfo"];
                 };
             };
             /** @description Validation Error */
@@ -1740,6 +4244,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1761,9 +4283,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SpaceInfo"];
                 };
             };
             /** @description Validation Error */
@@ -1775,6 +4295,24 @@ export interface operations {
                     "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     get_events_api_spaces__space_id__events_get: {
@@ -1784,6 +4322,8 @@ export interface operations {
                 since?: string | null;
                 /** @description Event ID cursor — return events before this */
                 before?: string | null;
+                /** @description UX-3 D-UX3-S6: load window of ~limit events ending at this event_id */
+                at?: string | null;
                 limit?: number;
             };
             header?: never;
@@ -1800,9 +4340,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["ContextEvent"][];
                 };
             };
             /** @description Validation Error */
@@ -1812,6 +4350,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1837,9 +4393,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ContextEvent"];
                 };
             };
             /** @description Validation Error */
@@ -1849,6 +4403,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1873,9 +4445,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["ContextEvent"][];
                 };
             };
             /** @description Validation Error */
@@ -1885,6 +4455,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1906,9 +4494,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Participant"][];
                 };
             };
             /** @description Validation Error */
@@ -1918,6 +4504,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1944,9 +4548,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Participant"];
                 };
             };
             /** @description Validation Error */
@@ -1956,6 +4558,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -1978,9 +4598,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["HeartbeatResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1990,6 +4608,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2015,9 +4651,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ContextEvent"];
                 };
             };
             /** @description Validation Error */
@@ -2027,6 +4661,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2052,9 +4704,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ContextEvent"];
                 };
             };
             /** @description Validation Error */
@@ -2064,6 +4714,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2089,9 +4757,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["JoinSpaceResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2101,6 +4767,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2125,9 +4809,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["SpaceLink"][];
                 };
             };
             /** @description Validation Error */
@@ -2137,6 +4819,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2162,9 +4862,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SpaceLink"];
                 };
             };
             /** @description Validation Error */
@@ -2174,6 +4872,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2196,9 +4912,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeleteLinkResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2208,6 +4922,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2230,9 +4962,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ContextEvent"];
                 };
             };
             /** @description Validation Error */
@@ -2242,6 +4972,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2268,9 +5016,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["ContextEvent"][];
                 };
             };
             /** @description Validation Error */
@@ -2280,6 +5026,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2306,9 +5070,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ActivityDigest"];
                 };
             };
             /** @description Validation Error */
@@ -2318,6 +5080,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2346,9 +5126,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Summary"];
                 };
             };
             /** @description Validation Error */
@@ -2358,6 +5136,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2381,9 +5177,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ActorCredentialsResponse"] | components["schemas"]["ActorRegistrationTicketResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2393,6 +5187,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    register_agent_api_agents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAgentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActorRegistrationTicketResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2412,9 +5275,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Actor"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2434,9 +5313,76 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["HeartbeatResponse"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    actor_pulse_api_actors_me_pulse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PulseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PulseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2459,9 +5405,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["SpaceInfo"][];
                 };
             };
             /** @description Validation Error */
@@ -2471,6 +5415,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2490,9 +5452,112 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Actor"][];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_my_oauth_grants_api_actors_me_oauth_grants_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthGrantSummary"][];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    disconnect_oauth_grant_api_actors_me_oauth_grants__client_id__disconnect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthDisconnectResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2512,9 +5577,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["OrientationResponse"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2538,9 +5619,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["SetFocusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2550,6 +5629,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2571,9 +5668,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeleteActorResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2583,6 +5678,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2608,9 +5721,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Actor"];
                 };
             };
             /** @description Validation Error */
@@ -2620,6 +5731,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2641,9 +5770,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["FirstKeyTicketResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2653,6 +5780,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2674,9 +5819,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ActorCredentialsResponse"] | components["schemas"]["ActorRegistrationTicketResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2686,6 +5829,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2707,9 +5868,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ReleaseAgentResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2719,6 +5878,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_session_count_api_actors__actor_id__session_count_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                actor_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionCountResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2740,9 +5966,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["PersonalAccessToken"][];
                 };
             };
             /** @description Validation Error */
@@ -2752,6 +5976,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2775,9 +6017,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["CreatePatResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2787,6 +6027,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2808,9 +6066,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["OkResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2820,6 +6076,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2843,9 +6117,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["AuthRequestResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2855,6 +6127,73 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    auth_redeem_auth_redeem_get: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2874,9 +6213,229 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    auth_login_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthRedeemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    auth_request_reset_auth_request_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RequestResetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RequestResetResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    auth_reset_auth_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthRedeemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    auth_set_password_auth_set_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2900,9 +6459,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["RedeemInviteResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2912,6 +6469,79 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_threads_route_api_spaces__space_id__threads_get: {
+        parameters: {
+            query?: {
+                /** @description ISO-8601 last_activity_at, exclusive upper-bound */
+                cursor?: string | null;
+                limit?: number;
+                /** @description Optional message_type filter (repeatable query param) */
+                filter?: string[] | null;
+            };
+            header?: never;
+            path: {
+                space_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListThreadsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2937,9 +6567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Thread"];
                 };
             };
             /** @description Validation Error */
@@ -2949,6 +6577,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -2971,9 +6617,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["ThreadWithEvents"];
                 };
             };
             /** @description Validation Error */
@@ -2983,6 +6627,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    mark_thread_read_route_api_spaces__space_id__threads__thread_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                space_id: string;
+                thread_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkThreadReadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3007,9 +6721,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Decision"][];
                 };
             };
             /** @description Validation Error */
@@ -3019,6 +6731,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3044,9 +6774,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Decision"];
                 };
             };
             /** @description Validation Error */
@@ -3056,6 +6784,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3077,9 +6823,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DecisionSummary"];
                 };
             };
             /** @description Validation Error */
@@ -3089,6 +6833,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3111,9 +6873,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Decision"];
                 };
             };
             /** @description Validation Error */
@@ -3123,6 +6883,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3149,9 +6927,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Decision"];
                 };
             };
             /** @description Validation Error */
@@ -3161,6 +6937,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3184,9 +6978,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Question"][];
                 };
             };
             /** @description Validation Error */
@@ -3196,6 +6988,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3221,9 +7031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Question"];
                 };
             };
             /** @description Validation Error */
@@ -3233,6 +7041,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3255,9 +7081,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Question"];
                 };
             };
             /** @description Validation Error */
@@ -3267,6 +7091,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3293,9 +7135,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Question"];
                 };
             };
             /** @description Validation Error */
@@ -3305,6 +7145,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3326,7 +7184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["TimerResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3336,6 +7194,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3361,7 +7237,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["TimerResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3371,6 +7247,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3393,7 +7287,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["DeletedResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3403,6 +7297,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3426,9 +7338,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Archive"][];
                 };
             };
             /** @description Validation Error */
@@ -3438,6 +7348,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3463,9 +7391,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Archive"];
                 };
             };
             /** @description Validation Error */
@@ -3475,6 +7401,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3497,9 +7441,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Archive"];
                 };
             };
             /** @description Validation Error */
@@ -3509,6 +7451,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3531,9 +7491,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["PromptRuleResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3543,6 +7501,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3566,9 +7542,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PromptRuleResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3578,6 +7552,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3599,9 +7591,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PromptRuleResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3611,6 +7601,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3632,9 +7640,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeletedResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3644,6 +7650,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3669,9 +7693,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["PromptRuleResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3681,6 +7703,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3700,9 +7740,25 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Tenant"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3724,9 +7780,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Tenant"];
                 };
             };
             /** @description Validation Error */
@@ -3736,6 +7790,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3758,9 +7830,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Tenant"][];
                 };
             };
             /** @description Validation Error */
@@ -3770,6 +7840,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3793,9 +7881,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Tenant"];
                 };
             };
             /** @description Validation Error */
@@ -3805,6 +7891,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3826,9 +7930,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Tenant"];
                 };
             };
             /** @description Validation Error */
@@ -3838,6 +7940,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3859,9 +7979,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Tenant"];
                 };
             };
             /** @description Validation Error */
@@ -3871,6 +7989,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3892,9 +8028,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Tenant"];
                 };
             };
             /** @description Validation Error */
@@ -3904,6 +8038,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3925,9 +8077,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Actor"][];
                 };
             };
             /** @description Validation Error */
@@ -3937,6 +8087,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3958,9 +8126,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeleteActorResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3970,6 +8136,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -3995,9 +8179,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Actor"];
                 };
             };
             /** @description Validation Error */
@@ -4007,6 +8189,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -4029,9 +8229,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["Invite"][];
                 };
             };
             /** @description Validation Error */
@@ -4041,6 +8239,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -4064,9 +8280,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["Invite"];
                 };
             };
             /** @description Validation Error */
@@ -4076,6 +8290,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -4097,9 +8329,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    };
+                    "application/json": components["schemas"]["DeleteInviteResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4109,6 +8339,24 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
@@ -4137,9 +8385,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: unknown;
-                    }[];
+                    "application/json": components["schemas"]["SearchResult"][];
                 };
             };
             /** @description Validation Error */
@@ -4149,6 +8395,1049 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    oauth_authorize_info_api_oauth_authorize_info_get: {
+        parameters: {
+            query: {
+                response_type: string;
+                client_id: string;
+                redirect_uri: string;
+                state: string;
+                code_challenge: string;
+                code_challenge_method: string;
+                scope?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthAuthorizeInfo"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    oauth_authorize_post_oauth_authorize_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["Body_oauth_authorize_post_oauth_authorize_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    oauth_token_oauth_token_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/x-www-form-urlencoded": components["schemas"]["Body_oauth_token_oauth_token_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthTokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    oauth_register_oauth_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthRegisterResponse"];
+                };
+            };
+        };
+    };
+    oauth_authorization_server_metadata__well_known_oauth_authorization_server_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthAuthorizationServerMetadata"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    oauth_protected_resource_metadata__well_known_oauth_protected_resource_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OAuthProtectedResourceMetadata"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    oauth_revoke_oauth_revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    list_team_archetypes_api_team_archetypes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamArchetype"][];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_archetype_route_api_team_archetypes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateArchetypeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamArchetype"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_archetype_versions_route_api_team_archetypes__archetype_id__versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                archetype_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamArchetype"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    register_archetype_version_route_api_team_archetypes__archetype_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                archetype_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterArchetypeVersionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamArchetype"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get_team_api_teams__team_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Team"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    create_team_api_teams_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTeamRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Team"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    install_team_route_api_teams_install_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamInstallRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamInstallResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    export_team_route_api_teams__team_id__export_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                team_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamExportBundle"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    import_team_route_api_teams_import_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TeamImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TeamImportResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    archive_transcript_api_transcripts_archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TranscriptArchiveRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptArchiveResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    list_my_archives_api_actors_me_transcripts_archives_get: {
+        parameters: {
+            query?: {
+                since?: string | null;
+                limit?: number;
+                session_id?: string | null;
+                captured_at?: string | null;
+                paired?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranscriptArchive"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    post_compact_update_api_transcripts_archive__archive_id__post_compact_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                archive_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostCompactUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PostCompactUpdateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pause_all_route_api_control_pause_all_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PauseAllRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PauseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    pause_route_api_control_pause_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PauseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PauseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    receive_email_event_api_email_events_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    exchange_registration_ticket_api_registration_tickets__ticket_id__exchange_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ticket_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrationTicketExchangeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description ErrorEnvelope */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
         };
