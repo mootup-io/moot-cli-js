@@ -143,3 +143,32 @@ describe('harness=cursor-ide (R3)', () => {
     expect(stdoutAll).toContain('.cursor/mcp.json already exists');
   });
 });
+
+describe('harness=cursor-ide (R-SEC6 chmod regression)', () => {
+  it('R-SEC6 — generateCursorIde leaves .cursor at 0o700 and mcp.json at 0o600', async () => {
+    writeOAuthCredential(env.fakeHome);
+    const credsMod = await import('../../src/auth/credentials.js');
+    const unpin = seedKeytar(credsMod);
+    const { fetch } = makePatFetch();
+
+    const { cmdInit } = await import('../../src/index.js');
+    try {
+      await cmdInit({
+        cwd: env.fakeCwd,
+        apiUrl: 'http://convo.test',
+        fetch,
+        harness: 'cursor-ide',
+      });
+    } finally {
+      unpin();
+    }
+
+    const cursorDir = join(env.fakeCwd, '.cursor');
+    const mcpPath = join(cursorDir, 'mcp.json');
+    expect(existsSync(cursorDir)).toBe(true);
+    expect(existsSync(mcpPath)).toBe(true);
+    // Mask off file-type bits; compare only permission bits.
+    expect(statSync(cursorDir).mode & 0o777).toBe(0o700);
+    expect(statSync(mcpPath).mode & 0o777).toBe(0o600);
+  });
+});
