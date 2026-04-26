@@ -26,8 +26,9 @@ export async function generateCursorIde(args: GenerateCursorIdeArgs): Promise<vo
   const confirm = args.confirm ?? defaultConfirm;
 
   if (existsSync(mcpPath) && !force) {
-    const existing = readFileSync(mcpPath, 'utf8');
-    console.log(`.cursor/mcp.json already exists:\n${existing}`);
+    // SEC-4-B: do NOT read or echo file contents — file holds Authorization
+    // Bearer <PAT> which would land in stdout / Claude Code session JSONL.
+    console.log('.cursor/mcp.json already exists; pass --force to overwrite.');
     if (!yes) {
       const ok = await confirm(
         `Overwrite .cursor/mcp.json with new PAT-backed config? [y/N] `,

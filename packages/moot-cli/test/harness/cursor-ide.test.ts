@@ -91,4 +91,55 @@ describe('harness=cursor-ide (R3)', () => {
     expect(gi).toContain('.cursor/mcp.json');
     expect(gi.match(/\.cursor\/mcp\.json/g)?.length).toBe(1);
   });
+
+  it('R4 — second-init does not echo PAT to stdout', async () => {
+    writeOAuthCredential(env.fakeHome);
+    const credsMod = await import('../../src/auth/credentials.js');
+    const unpin = seedKeytar(credsMod);
+    const { fetch } = makePatFetch();
+
+    // Pre-seed an existing .cursor/mcp.json containing a Bearer token.
+    const { mkdirSync, writeFileSync } = await import('node:fs');
+    mkdirSync(join(env.fakeCwd, '.cursor'), { recursive: true, mode: 0o700 });
+    writeFileSync(
+      join(env.fakeCwd, '.cursor', 'mcp.json'),
+      JSON.stringify({
+        mcpServers: {
+          convo: {
+            url: 'http://convo.test/mcp',
+            headers: { Authorization: 'Bearer existing_pat_secret_xyz' },
+          },
+        },
+      }),
+    );
+
+    const captured: string[] = [];
+    const spy = vi.spyOn(console, 'log').mockImplementation((s: string) => {
+      captured.push(s);
+    });
+
+    try {
+      const { cmdInit } = await import('../../src/index.js');
+      try {
+        await cmdInit({
+          cwd: env.fakeCwd,
+          apiUrl: 'http://convo.test',
+          fetch,
+          harness: 'cursor-ide',
+          yes: false,
+          confirm: async () => false, // user declines overwrite
+        });
+      } finally {
+        unpin();
+      }
+    } finally {
+      spy.mockRestore();
+    }
+
+    const stdoutAll = captured.join('\n');
+    expect(stdoutAll).not.toContain('Bearer ');
+    expect(stdoutAll).not.toContain('existing_pat_secret_xyz');
+    // Positive: redacted message reaches stdout.
+    expect(stdoutAll).toContain('.cursor/mcp.json already exists');
+  });
 });
