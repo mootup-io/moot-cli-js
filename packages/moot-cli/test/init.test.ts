@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
 import { http, HttpResponse } from 'msw';
+import type { components } from '@mootup/moot-sdk';
 import {
   mkdtempSync,
   mkdirSync,
@@ -12,6 +13,11 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { server } from './setup.js';
+
+// F11.10: type-anchor msw mock bodies on OAS-generated types so missing
+// fields surface as compile errors. R7 covers the type-compile invariant.
+type RegistrationTicketExchangeResponse =
+  components['schemas']['RegistrationTicketExchangeResponse'];
 
 const ORIGINAL_HOME = process.env.HOME;
 let fakeHome: string;
@@ -96,7 +102,7 @@ describe('cmdInit', () => {
         HttpResponse.json({ registration_ticket_id: 'rgt_2' }),
       ),
       http.post('http://convo.test/api/registration-tickets/rgt_1/exchange', () =>
-        HttpResponse.json({
+        HttpResponse.json<RegistrationTicketExchangeResponse>({
           actor_id: 'act_1',
           api_key: 'convo_key_rotated_1',
           display_name: 'Leader',
@@ -105,7 +111,7 @@ describe('cmdInit', () => {
         }),
       ),
       http.post('http://convo.test/api/registration-tickets/rgt_2/exchange', () =>
-        HttpResponse.json({
+        HttpResponse.json<RegistrationTicketExchangeResponse>({
           actor_id: 'act_2',
           api_key: 'convo_key_rotated_2',
           display_name: 'Spec',
@@ -329,5 +335,18 @@ describe('cmdInit', () => {
     expect(
       existsSync(join(fakeCwd, '.moot', 'suggested-devcontainer', 'devcontainer.json')),
     ).toBe(true);
+  });
+
+  // R7 (compile-only — test passes when the file builds; per F11.10 no missing
+  // fields under strict TS).
+  it('R7 — exchange mock satisfies RegistrationTicketExchangeResponse type', () => {
+    const sample: RegistrationTicketExchangeResponse = {
+      actor_id: 'agt_typecheck',
+      actor_type: 'agent',
+      api_key: 'convo_key_typecheck',
+      api_key_prefix: 'convo_key_typ',
+      display_name: 'TypeCheck',
+    };
+    expect(sample.actor_id).toBe('agt_typecheck');
   });
 });

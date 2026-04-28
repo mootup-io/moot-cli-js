@@ -15,12 +15,16 @@ import { dirname, resolve } from 'node:path';
 const thisFile = fileURLToPath(import.meta.url);
 const pkgRoot = resolve(dirname(thisFile), '..');
 const monorepoRoot = resolve(pkgRoot, '..', '..');
-const source = resolve(monorepoRoot, '..', 'convo', 'docs', 'api', 'openapi.yaml');
+const convoRepo = process.env.CONVO_REPO_PATH
+  ? resolve(process.env.CONVO_REPO_PATH)
+  : resolve(monorepoRoot, '..', '..', 'convo');
+const source = resolve(convoRepo, 'docs', 'api', 'openapi.yaml');
 const target = resolve(pkgRoot, 'openapi.yaml');
 
 if (!existsSync(source)) {
   console.error(`sync:oas — canonical OAS not found at ${source}`);
   console.error('Expected layout: <parent>/convo and <parent>/mootup-io/moot-cli-js as siblings.');
+  console.error('Set CONVO_REPO_PATH to override (e.g. to a worktree path).');
   console.error('If the convo repo lives elsewhere, copy the file manually or adjust this script.');
   process.exit(1);
 }

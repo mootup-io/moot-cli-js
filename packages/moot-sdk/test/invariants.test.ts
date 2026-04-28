@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, unlinkSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -25,13 +26,20 @@ describe('structural invariants', () => {
   });
 
   it('src/generated/paths.ts is byte-identical to a fresh regeneration', () => {
-    const current = readFileSync(generatedPath, 'utf8');
-    const fresh = execFileSync(
-      'npx',
-      ['openapi-typescript', oasPath],
-      { cwd: pkgRoot, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
-    );
-    expect(fresh).toBe(current);
+    // F11.6: file-based capture (was stdout; behavioral parity with build script).
+    const tmpFile = join(tmpdir(), `paths-${Date.now()}-${Math.random().toString(36).slice(2)}.ts`);
+    try {
+      execFileSync(
+        'npx',
+        ['openapi-typescript', oasPath, '-o', tmpFile],
+        { cwd: pkgRoot, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 },
+      );
+      const fresh = readFileSync(tmpFile, 'utf8');
+      const current = readFileSync(generatedPath, 'utf8');
+      expect(fresh).toBe(current);
+    } finally {
+      try { unlinkSync(tmpFile); } catch { /* best-effort */ }
+    }
   });
 
   // AH-g structural invariants (inv 4, 8, 11)

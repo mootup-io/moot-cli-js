@@ -27,6 +27,7 @@
   },
   "scripts": {
     "sync:templates": "node scripts/sync-templates.mjs",
+    "sync:skills": "node scripts/sync-skills.mjs",
     "build": "tsc -p tsconfig.build.json",
     "test": "vitest run",
     "test:watch": "vitest",

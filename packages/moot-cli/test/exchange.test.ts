@@ -1,7 +1,13 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
+import type { components } from '@mootup/moot-sdk';
 import { server } from './setup.js';
 import { exchangeRegistrationTicket } from '../src/commands/init.js';
+
+// F11.10: type-anchor msw mock bodies on OAS-generated types so missing
+// fields surface as compile errors.
+type RegistrationTicketExchangeResponse =
+  components['schemas']['RegistrationTicketExchangeResponse'];
 
 const API_URL = 'https://api.mootup.test';
 
@@ -17,7 +23,7 @@ describe('SEC-5 exchangeRegistrationTicket', () => {
   it('R13 — returns the bound api_key on 200', async () => {
     server.use(
       http.post(`${API_URL}/api/registration-tickets/:ticket_id/exchange`, () =>
-        HttpResponse.json({
+        HttpResponse.json<RegistrationTicketExchangeResponse>({
           actor_id: 'agt_xyz',
           api_key: 'convo_key_under_test',
           display_name: 'TestAgent',

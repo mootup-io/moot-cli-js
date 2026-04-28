@@ -22,6 +22,23 @@ describe('getTemplatesDir()', () => {
 });
 
 describe('BUNDLED_SKILLS', () => {
+  it('exports the canonical 11 skills (matches templates/skills/ directory)', () => {
+    expect(BUNDLED_SKILLS.length).toBe(11);
+    expect([...BUNDLED_SKILLS].sort()).toEqual([
+      'doc-curation',
+      'handoff',
+      'implementation-workflow',
+      'leader-workflow',
+      'librarian-workflow',
+      'memory-audit',
+      'merge-to-main',
+      'product-workflow',
+      'spec-checklist',
+      'stack-reset',
+      'verify',
+    ]);
+  });
+
   // T3: every advertised skill has a corresponding bundled directory with SKILL.md
   it.each(BUNDLED_SKILLS)('skill %s has a SKILL.md under templates/skills/', (skill) => {
     const skillMd = join(getTemplatesDir(), 'skills', skill, 'SKILL.md');

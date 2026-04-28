@@ -20,17 +20,20 @@ export function getTemplatesDir(): string {
 }
 
 /**
- * Mirror of Python's `moot.scaffold.BUNDLED_SKILLS`. Names must stay in
- * lock-step; the parity test enforces that every name listed here has a
- * corresponding directory under `templates/skills/`.
+ * Canonical bundled-skills list. Mirrors the convo `.claude/skills/` SOT
+ * via `sync:skills`. The parity test enforces that every name listed here
+ * has a corresponding directory under `templates/skills/`.
  */
 export const BUNDLED_SKILLS: readonly string[] = [
-  'product-workflow',
-  'spec-checklist',
+  'doc-curation',
+  'handoff',
+  'implementation-workflow',
   'leader-workflow',
   'librarian-workflow',
-  'handoff',
-  'verify',
-  'doc-curation',
   'memory-audit',
+  'merge-to-main',
+  'product-workflow',
+  'spec-checklist',
+  'stack-reset',
+  'verify',
 ] as const;

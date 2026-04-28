@@ -28,7 +28,13 @@ const mootRepo = process.env.MOOT_REPO_PATH
   : resolve(getTemplatesDir(), '..', '..', '..', '..', 'moot');
 const canonical = join(mootRepo, 'src', 'moot', 'templates');
 
-const describeIfCanonical = existsSync(canonical) ? describe : describe.skip;
+// F-ARCH-7-PYTHON-PARITY-DEFERRED: Python `mootup-io/moot/.../templates/` is
+// retirement-deferred per OQ-ARCH-7-PYTHON-CLI-DISPOSITION = (a). The
+// canonical-vs-vendored byte-identity assertion is unenforceable while the
+// Python source is intentionally stale (newer skills land in convo SOT first;
+// JS-side sync via `sync:skills`; Python-side sync abandoned). Skip the
+// describe block until Python CLI fully retires.
+const describeIfCanonical = describe.skip;
 
 describeIfCanonical('parity with canonical mootup-io/moot templates', () => {
   // T4: vendored copy is byte-identical to canonical source.
