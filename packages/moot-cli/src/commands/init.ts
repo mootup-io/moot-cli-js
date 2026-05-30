@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { createMootupClient, type MootupClient } from '@mootup/moot-sdk';
-import { loadCredential, type Credential } from '../credential.js';
+import { loadCredential, resolveProfile, type Credential } from '../credential.js';
 import {
   storeOAuthCredential,
   loadRefreshToken,
@@ -113,7 +113,7 @@ export async function cmdInit(opts: InitOptions): Promise<void> {
   const force = opts.force ?? false;
   const yes = opts.yes ?? false;
   const confirm = opts.confirm ?? defaultConfirm;
-  const profile = opts.profile ?? 'default';
+  const profile = resolveProfile(opts);
   validateProfile(profile);
 
   const harnessName = opts.harness ?? DEFAULT_HARNESS;

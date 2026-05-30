@@ -95,3 +95,64 @@ export function deleteCredential(profile = 'default'): void {
   writeFileSync(CRED_FILE, JSON.stringify(existing, null, 2) + '\n');
   chmodSync(CRED_FILE, 0o600);
 }
+
+export const META_KEYS = new Set<string>(['defaultProfile']);
+
+interface RawCredentialsFile {
+  defaultProfile?: string | null;
+  [key: string]: unknown;
+}
+
+function readRawFile(): RawCredentialsFile {
+  if (!existsSync(CRED_FILE)) return {};
+  try {
+    const parsed = JSON.parse(readFileSync(CRED_FILE, 'utf8')) as unknown;
+    if (!parsed || typeof parsed !== 'object') return {};
+    return parsed as RawCredentialsFile;
+  } catch {
+    return {};
+  }
+}
+
+function writeRawFile(data: RawCredentialsFile): void {
+  if (!existsSync(CRED_DIR)) {
+    mkdirSync(CRED_DIR, { recursive: true, mode: 0o700 });
+  } else {
+    chmodSync(CRED_DIR, 0o700);
+  }
+  writeFileSync(CRED_FILE, JSON.stringify(data, null, 2) + '\n');
+  chmodSync(CRED_FILE, 0o600);
+}
+
+export function loadDefaultProfile(): string | null {
+  const raw = readRawFile();
+  const v = raw.defaultProfile;
+  if (typeof v !== 'string' || v.length === 0) return null;
+  if (!/^[a-z0-9_-]+$/.test(v)) return null;
+  return v;
+}
+
+export function setDefaultProfile(profile: string): void {
+  const raw = readRawFile();
+  raw.defaultProfile = profile;
+  writeRawFile(raw);
+}
+
+export function clearDefaultProfile(): void {
+  const raw = readRawFile();
+  delete raw.defaultProfile;
+  writeRawFile(raw);
+}
+
+export function enumerateProfiles(): string[] {
+  const raw = readRawFile();
+  return Object.keys(raw)
+    .filter((k) => !META_KEYS.has(k))
+    .filter((k) => raw[k] && typeof raw[k] === 'object')
+    .sort();
+}
+
+export function resolveProfile(opts: { profile?: string }): string {
+  if (typeof opts.profile === 'string' && opts.profile.length > 0) return opts.profile;
+  return loadDefaultProfile() ?? 'default';
+}

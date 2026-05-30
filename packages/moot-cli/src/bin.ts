@@ -10,6 +10,12 @@ import { cmdAttach } from './commands/attach.js';
 import { cmdCompact } from './commands/compact.js';
 import { cmdLogout } from './commands/logout.js';
 import { cmdRefresh } from './commands/refresh.js';
+import {
+  cmdAccountList,
+  cmdAccountUse,
+  cmdAccountRemove,
+  cmdAccountAdd,
+} from './commands/account.js';
 
 // Single source of truth: read version from package.json at runtime.
 // `../package.json` resolves from dist/bin.js to the package root post-install;
@@ -85,6 +91,37 @@ program
   .command('compact [role]')
   .description('Compact a role\'s context (all roles if omitted)')
   .action((role) => cmdCompact({ role }));
+
+const accountCmd = program
+  .command('account')
+  .description('Manage local CLI profiles (multi-account)');
+
+accountCmd
+  .command('list')
+  .description('List registered profiles and mark the current default')
+  .action(() => cmdAccountList());
+
+accountCmd
+  .command('use <name>')
+  .description('Set the default profile')
+  .action((name: string) => cmdAccountUse({ name }));
+
+accountCmd
+  .command('remove <name>')
+  .description('Remove a profile and its credentials')
+  .option('--force', 'Remove even if last profile or current default', false)
+  .action((name: string, opts: { force?: boolean }) =>
+    cmdAccountRemove({ name, force: opts.force === true }),
+  );
+
+accountCmd
+  .command('add <name>')
+  .description('Register a new profile (alias for `moot login --profile <name>`)')
+  .option('--token <pat>', 'Personal access token (prompts if omitted)')
+  .option('--api-url <url>', 'Moot API URL', 'https://mootup.io')
+  .action((name: string, opts: { token?: string; apiUrl?: string }) =>
+    cmdAccountAdd({ name, ...(opts.token !== undefined ? { token: opts.token } : {}), ...(opts.apiUrl !== undefined ? { apiUrl: opts.apiUrl } : {}) }),
+  );
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err instanceof Error ? err.message : String(err));

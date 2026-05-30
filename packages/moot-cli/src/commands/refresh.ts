@@ -1,4 +1,4 @@
-import { loadCredential } from '../credential.js';
+import { loadCredential, resolveProfile } from '../credential.js';
 import {
   loadRefreshToken,
   storeOAuthCredential,
@@ -13,7 +13,7 @@ export interface RefreshOptions {
 }
 
 export async function cmdRefresh(opts: RefreshOptions): Promise<void> {
-  const profile = opts.profile ?? 'default';
+  const profile = resolveProfile(opts);
   validateProfile(profile);
   const cred = loadCredential(profile);
   if (!cred) {

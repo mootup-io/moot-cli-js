@@ -4,6 +4,7 @@ import {
   storeCredential,
   PAT_PREFIX,
   DEFAULT_API_URL,
+  resolveProfile,
 } from '../credential.js';
 import { validateProfile } from '../auth/profile.js';
 
@@ -29,7 +30,7 @@ async function defaultReadToken(): Promise<string> {
 }
 
 export async function cmdLogin(opts: LoginOptions): Promise<void> {
-  const profile = opts.profile ?? 'default';
+  const profile = resolveProfile(opts);
   validateProfile(profile);
   const apiUrl = opts.apiUrl ?? DEFAULT_API_URL;
   const token = opts.token ?? (await (opts.readToken ?? defaultReadToken)());

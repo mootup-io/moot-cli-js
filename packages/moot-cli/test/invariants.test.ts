@@ -132,6 +132,15 @@ describe('structural invariants', () => {
     expect(bin).toContain("'--show-token'");
   });
 
+  it('R15 — inv 13: bin.ts registers `account` subcommand with list/use/remove/add', () => {
+    const bin = readFileSync(join(PKG_ROOT, 'src', 'bin.ts'), 'utf8');
+    expect(bin).toContain(".command('account')");
+    for (const sub of ['list', 'use <name>', 'remove <name>', 'add <name>']) {
+      expect(bin).toContain(`.command('${sub}')`);
+    }
+    expect(bin).toMatch(/cmdAccount(List|Use|Remove|Add)/);
+  });
+
   it('dist/bin.js starts with shebang and has executable bit (T14)', () => {
     const binPath = join(PKG_ROOT, 'dist', 'bin.js');
     // T14 runs only after build — skip gracefully if dist/ doesn't exist

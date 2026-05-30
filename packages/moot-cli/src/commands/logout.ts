@@ -1,4 +1,4 @@
-import { loadCredential } from '../credential.js';
+import { loadCredential, resolveProfile } from '../credential.js';
 import { loadRefreshToken, deleteOAuthCredential } from '../auth/credentials.js';
 import { revokeRefreshToken } from '../auth/oauth.js';
 import { validateProfile } from '../auth/profile.js';
@@ -10,7 +10,7 @@ export interface LogoutOptions {
 }
 
 export async function cmdLogout(opts: LogoutOptions): Promise<void> {
-  const profile = opts.profile ?? 'default';
+  const profile = resolveProfile(opts);
   validateProfile(profile);
   const cred = loadCredential(profile);
   if (!cred) {

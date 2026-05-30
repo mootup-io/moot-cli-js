@@ -18,11 +18,23 @@ export {
   loadCredential,
   storeCredential,
   deleteCredential,
+  loadDefaultProfile,
+  setDefaultProfile,
+  clearDefaultProfile,
+  enumerateProfiles,
+  resolveProfile,
+  META_KEYS,
   CRED_DIR,
   CRED_FILE,
   type Credential,
   type CredentialType,
 } from './credential.js';
+export {
+  cmdAccountList,
+  cmdAccountUse,
+  cmdAccountRemove,
+  cmdAccountAdd,
+} from './commands/account.js';
 export {
   ARCHETYPE_CATALOG,
   DEFAULT_ARCHETYPE,
