@@ -2,7 +2,7 @@
 import { createRequire } from 'node:module';
 import { Command } from 'commander';
 import { cmdLogin } from './commands/login.js';
-import { cmdInit } from './commands/init.js';
+import { cmdInit, cmdListHarnesses } from './commands/init.js';
 import { cmdUp } from './commands/up.js';
 import { cmdDown } from './commands/down.js';
 import { cmdStatus } from './commands/status.js';
@@ -48,11 +48,18 @@ program
   .option('--archetype <id>', 'Archetype to install (skips prompt)')
   .option(
     '--harness <name>',
-    'Harness integration (claude-code, cursor-agent, cursor-ide, sdk)',
+    'Harness integration (claude-code, cursor-agent, cursor-ide, codex, sdk)',
     'claude-code',
   )
   .option('--show-token', 'For --harness sdk, print the full PAT plaintext', false)
-  .action((opts) => cmdInit(opts));
+  .option('--list-harnesses', 'List supported harnesses and exit', false)
+  .action((opts) => {
+    if (opts.listHarnesses) {
+      cmdListHarnesses();
+      return;
+    }
+    return cmdInit(opts);
+  });
 
 program
   .command('logout')

@@ -7,6 +7,7 @@ export { cmdAttach } from './commands/attach.js';
 export { cmdCompact } from './commands/compact.js';
 export { cmdLogout } from './commands/logout.js';
 export { cmdRefresh } from './commands/refresh.js';
+export { cmdListHarnesses } from './commands/init.js';
 export {
   containerIdOrNone,
   execInContainer,
@@ -74,3 +75,4 @@ export { generateClaudeCode } from './harness/claude-code.js';
 export { generateCursorAgent } from './harness/cursor-agent.js';
 export { generateCursorIde } from './harness/cursor-ide.js';
 export { generateSdk } from './harness/sdk.js';
+export { generateCodex, type GenerateCodexArgs } from './harness/codex.js';

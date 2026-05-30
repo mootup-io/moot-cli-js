@@ -33,7 +33,7 @@ describe('harness rejection paths (R5–R8)', () => {
           apiUrl: 'http://convo.test',
           harness: 'foo',
         }),
-      ).rejects.toThrow(/Known: claude-code, cursor-agent, cursor-ide, sdk/);
+      ).rejects.toThrow(/Known: claude-code, cursor-agent, cursor-ide, codex, sdk/);
     } finally {
       unpin();
     }

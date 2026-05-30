@@ -98,7 +98,7 @@ describe('structural invariants', () => {
   it('R11b — HARNESS_REGISTRY has exactly 4 entries (inv 2)', async () => {
     const { HARNESS_REGISTRY } = await import('../src/index.js');
     expect(Object.keys(HARNESS_REGISTRY).sort()).toEqual(
-      ['claude-code', 'cursor-agent', 'cursor-ide', 'sdk'].sort(),
+      ['claude-code', 'codex', 'cursor-agent', 'cursor-ide', 'sdk'].sort(),
     );
   });
 

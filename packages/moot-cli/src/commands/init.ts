@@ -24,6 +24,7 @@ import { PROFILE_RE, validateProfile } from '../auth/profile.js';
 import {
   classifyHarness,
   DEFAULT_HARNESS,
+  formatHarnessList,
   validateFlagMatrix,
   type HarnessEntry,
 } from '../harness/index.js';
@@ -35,6 +36,7 @@ import {
 } from '../harness/claude-code.js';
 import { generateCursorAgent } from '../harness/cursor-agent.js';
 import { generateCursorIde } from '../harness/cursor-ide.js';
+import { generateCodex } from '../harness/codex.js';
 import { generateSdk } from '../harness/sdk.js';
 
 export interface InitOptions {
@@ -320,6 +322,15 @@ async function hostSideSoloFlow(args: HostSideSoloArgs): Promise<void> {
 
   if (args.harness.name === 'cursor-ide') {
     await generateCursorIde({
+      token: patResp.token,
+      apiUrl: args.apiUrl,
+      cwd: args.cwd,
+      force: args.force,
+      yes: args.yes,
+      confirm: args.confirm,
+    });
+  } else if (args.harness.name === 'codex') {
+    await generateCodex({
       token: patResp.token,
       apiUrl: args.apiUrl,
       cwd: args.cwd,
@@ -672,3 +683,7 @@ async function synthesizeInstallResponse(
 
 // Inv 10: keep PROFILE_RE referenced in this module for grep-backed tests.
 void PROFILE_RE;
+
+export function cmdListHarnesses(): void {
+  process.stdout.write(formatHarnessList());
+}

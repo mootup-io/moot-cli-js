@@ -1,4 +1,4 @@
-export type HarnessName = 'claude-code' | 'cursor-agent' | 'cursor-ide' | 'sdk';
+export type HarnessName = 'claude-code' | 'cursor-agent' | 'cursor-ide' | 'codex' | 'sdk';
 export type HarnessTopology = 'devcontainer-team' | 'host-side-solo';
 
 export interface HarnessEntry {
@@ -45,6 +45,12 @@ export const HARNESS_REGISTRY: Readonly<Record<HarnessName, HarnessEntry>> = {
     description: 'Cursor IDE project-local MCP config (host, solo)',
     paths_written: ['.cursor/mcp.json'],
   },
+  codex: {
+    name: 'codex',
+    topology: 'host-side-solo',
+    description: 'Codex CLI project-local MCP config (host, solo)',
+    paths_written: ['.codex/config.toml'],
+  },
   sdk: {
     name: 'sdk',
     topology: 'host-side-solo',
@@ -81,4 +87,12 @@ export function validateFlagMatrix(
         `(host-side-solo; no team to archetype).`,
     );
   }
+}
+
+export function formatHarnessList(): string {
+  const lines: string[] = [];
+  for (const entry of Object.values(HARNESS_REGISTRY)) {
+    lines.push(`${entry.name} (${entry.topology}): ${entry.description}`);
+  }
+  return lines.join('\n') + '\n';
 }
