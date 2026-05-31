@@ -100,23 +100,44 @@ export async function devcontainerUp(
 }
 
 /**
- * Run `docker exec --user node [-it] <cid> <args...>`. Streams output via
- * stdio: 'inherit'. Returns exit code. Interactive mode adds TERM + LANG
- * env vars so tmux attach works across host terminals (mirrors Python's
+ * Resolve the user `docker exec` should run as for container `cid`.
+ *
+ * Runs `docker inspect --format '{{.Config.User}}' <cid>` and returns the
+ * trimmed `Config.User`. Falls back to `'node'` when that value is empty —
+ * which also covers an inspect failure (a non-zero exit yields empty stdout),
+ * so a USER-less image or a container that vanished after `requireContainerId`
+ * degrades to the historical default instead of raising.
+ */
+export function getContainerUser(cid: string, deps: DockerDeps = {}): string {
+  const spawnFn = deps.spawnSyncFn ?? defaultSpawnSync;
+  const result = spawnFn('docker', [
+    'inspect', '--format', '{{.Config.User}}', cid,
+  ]);
+  return result.stdout.trim() || 'node';
+}
+
+/**
+ * Run `docker exec --user <user> [-it] <cid> <args...>`. The user defaults to
+ * the container's configured `Config.User` (resolved via {@link getContainerUser}),
+ * so devcontainers with a non-`node` user (e.g. `dev`, `vscode`) work without
+ * per-project patching; pass `options.user` to override (e.g. `'root'`). Streams
+ * output via stdio: 'inherit'. Returns exit code. Interactive mode adds TERM +
+ * LANG env vars so tmux attach works across host terminals (mirrors Python's
  * exec_interactive behavior).
  */
 export async function execInContainer(
   cid: string,
   args: readonly string[],
-  options: { interactive?: boolean } = {},
+  options: { interactive?: boolean; user?: string } = {},
   deps: DockerDeps = {},
 ): Promise<number> {
   const spawnFn = deps.spawnAsyncFn ?? defaultSpawnAsync;
+  const user = options.user ?? getContainerUser(cid, deps);
   const dockerArgs: string[] = ['exec'];
   if (options.interactive) {
     dockerArgs.push('-it');
   }
-  dockerArgs.push('--user', 'node');
+  dockerArgs.push('--user', user);
   if (options.interactive) {
     dockerArgs.push('-e', 'TERM=xterm-256color', '-e', 'LANG=C.UTF-8');
     const colorterm = process.env.COLORTERM;
