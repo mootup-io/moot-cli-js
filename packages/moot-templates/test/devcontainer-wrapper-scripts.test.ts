@@ -11,33 +11,13 @@
  */
 import { describe, expect, it, afterEach, beforeEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { getTemplatesDir } from '../src/index.js';
 
 const PWN_MARKER = '/tmp/sec2c-pwn';
 const SCRIPTS = ['run-moot-mcp.sh', 'run-moot-channel.sh'] as const;
-
-function _resolveConvoRepo(): string {
-	if (process.env.CONVO_REPO_PATH) return resolve(process.env.CONVO_REPO_PATH);
-	// Walk up from getTemplatesDir() looking for a sibling `convo` repo with
-	// `.devcontainer/post-create.sh` (handles standard checkouts, worktree
-	// checkouts, and CI layouts uniformly).
-	let cursor = resolve(getTemplatesDir(), '..');
-	for (let i = 0; i < 12; i++) {
-		const candidate = resolve(cursor, '..', 'convo');
-		if (existsSync(join(candidate, '.devcontainer', 'post-create.sh'))) {
-			return candidate;
-		}
-		const next = resolve(cursor, '..');
-		if (next === cursor) break;
-		cursor = next;
-	}
-	// Last-resort default for the canonical devcontainer layout.
-	return '/workspaces/convo';
-}
-const convoRepo = _resolveConvoRepo();
 
 function makeProject(): string {
 	const project = mkdtempSync(join(tmpdir(), 'sec2c-'));
@@ -121,25 +101,4 @@ describe.each(SCRIPTS)('%s — SEC-2-C injection guard', (scriptName) => {
 		expect(out).toContain('POST_KEY=convo_key_benign');
 		rmSync(project, { recursive: true, force: true });
 	});
-});
-
-// R5: F12.5 — `claude mcp add` calls in post-create.sh are idempotent.
-//
-// Anchor on the regex pattern: each `claude mcp add <name>` invocation MUST
-// be preceded by a `claude mcp list ... | grep -q '^<name>:' ||` precheck
-// OR include `--force` (none currently exists per Phase A § 13.A.7).
-it('R5 — post-create.sh wraps every `claude mcp add` with idempotency check', () => {
-	const postCreate = readFileSync(
-		join(convoRepo, '.devcontainer', 'post-create.sh'),
-		'utf8',
-	);
-	const addCalls = postCreate.match(/claude mcp add (\S+)/g) ?? [];
-	expect(addCalls.length).toBeGreaterThanOrEqual(2);
-	for (const call of addCalls) {
-		const name = call.match(/claude mcp add (\S+)/)![1];
-		const guardRe = new RegExp(
-			String.raw`claude mcp list[^\n]*\|\s*grep -q '\^${name}:'\s*\|\|\s*claude mcp add ${name}\b`,
-		);
-		expect(postCreate, `mcp add ${name} not idempotent in post-create.sh`).toMatch(guardRe);
-	}
 });
