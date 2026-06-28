@@ -117,7 +117,39 @@ export function getContainerUser(cid: string, deps: DockerDeps = {}): string {
 }
 
 /**
- * Run `docker exec --user <user> [-it] <cid> <args...>`. The user defaults to
+ * Resolve the in-container working directory `docker exec` should run from.
+ *
+ * The container's `Config.WorkingDir` is `/` for a devcontainer, so a bare
+ * `docker exec ... moot up` lands in `/` and the in-container `moot` never finds
+ * `moot.toml` (its `find_config()` walks cwd→parents from `/`). The devcontainer
+ * CLI bind-mounts the project root to `/workspaces/<name>`, so we read the
+ * container's mounts and return that destination. Returns null when no such
+ * mount exists or inspect fails — callers then omit `-w` (status-quo behavior).
+ */
+export function getContainerWorkdir(cid: string, deps: DockerDeps = {}): string | null {
+  const spawnFn = deps.spawnSyncFn ?? defaultSpawnSync;
+  const result = spawnFn('docker', [
+    'inspect', '--format', '{{json .Mounts}}', cid,
+  ]);
+  if (result.status !== 0) return null;
+  let mounts: Array<{ Destination?: unknown }>;
+  try {
+    mounts = JSON.parse(result.stdout) as Array<{ Destination?: unknown }>;
+  } catch {
+    return null;
+  }
+  // Prefer the shortest /workspaces/* destination so the top-level workspace
+  // wins over any nested bind (e.g. a separately-mounted .worktrees path).
+  const dests = mounts
+    .map((m) => m.Destination)
+    .filter((d): d is string => typeof d === 'string' && d.startsWith('/workspaces/'))
+    .sort((a, b) => a.length - b.length);
+  return dests[0] ?? null;
+}
+
+/**
+ * Run `docker exec --user <user> [-w <workdir>] [-it] <cid> <args...>`. The user
+ * defaults to
  * the container's configured `Config.User` (resolved via {@link getContainerUser}),
  * so devcontainers with a non-`node` user (e.g. `dev`, `vscode`) work without
  * per-project patching; pass `options.user` to override (e.g. `'root'`). Streams
@@ -128,16 +160,23 @@ export function getContainerUser(cid: string, deps: DockerDeps = {}): string {
 export async function execInContainer(
   cid: string,
   args: readonly string[],
-  options: { interactive?: boolean; user?: string } = {},
+  options: { interactive?: boolean; user?: string; workdir?: string } = {},
   deps: DockerDeps = {},
 ): Promise<number> {
   const spawnFn = deps.spawnAsyncFn ?? defaultSpawnAsync;
   const user = options.user ?? getContainerUser(cid, deps);
+  // Resolve the workspace folder so the in-container `moot` runs where
+  // moot.toml lives (the container's WorkingDir is `/`). An explicit
+  // options.workdir wins; otherwise auto-detect from the container's mounts.
+  const workdir = options.workdir ?? getContainerWorkdir(cid, deps);
   const dockerArgs: string[] = ['exec'];
   if (options.interactive) {
     dockerArgs.push('-it');
   }
   dockerArgs.push('--user', user);
+  if (workdir) {
+    dockerArgs.push('-w', workdir);
+  }
   if (options.interactive) {
     dockerArgs.push('-e', 'TERM=xterm-256color', '-e', 'LANG=C.UTF-8');
     const colorterm = process.env.COLORTERM;

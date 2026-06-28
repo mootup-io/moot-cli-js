@@ -3,9 +3,24 @@ import {
   containerIdOrNone,
   execInContainer,
   getContainerUser,
+  getContainerWorkdir,
   type ExecFn,
   type SpawnFn,
 } from '../src/docker.js';
+
+/** Route a docker-inspect mock by its --format argument. */
+function inspectRouter(byFormat: Record<string, string>): SpawnFn {
+  return (_cmd, args) => {
+    const fmtIdx = args.indexOf('--format');
+    const fmt = fmtIdx >= 0 ? args[fmtIdx + 1] ?? '' : '';
+    const stdout = byFormat[fmt] ?? '';
+    return { status: 0, stdout, stderr: '' };
+  };
+}
+
+const MOUNTS_JSON = JSON.stringify([
+  { Type: 'bind', Source: '/host/proj', Destination: '/workspaces/proj' },
+]);
 
 describe('containerIdOrNone — T7', () => {
   it('returns first id from docker ps output', () => {
@@ -66,12 +81,45 @@ describe('getContainerUser — MCEU', () => {
   });
 });
 
-describe('execInContainer — MCEU user derivation', () => {
-  it('R5: auto-derives the container user and passes it to docker exec --user', async () => {
+describe('getContainerWorkdir — multi-provider moot up fix', () => {
+  it('returns the /workspaces destination from the container mounts', () => {
+    const spawnSyncFn = inspectRouter({ '{{json .Mounts}}': MOUNTS_JSON });
+    expect(getContainerWorkdir('cid', { spawnSyncFn })).toBe('/workspaces/proj');
+  });
+
+  it('prefers the shortest /workspaces mount (top-level workspace)', () => {
+    const mounts = JSON.stringify([
+      { Destination: '/workspaces/proj/.worktrees/spec' },
+      { Destination: '/workspaces/proj' },
+      { Destination: '/home/node/.secrets' },
+    ]);
+    const spawnSyncFn = inspectRouter({ '{{json .Mounts}}': mounts });
+    expect(getContainerWorkdir('cid', { spawnSyncFn })).toBe('/workspaces/proj');
+  });
+
+  it('returns null when no /workspaces mount exists', () => {
+    const mounts = JSON.stringify([{ Destination: '/home/node/.secrets' }]);
+    const spawnSyncFn = inspectRouter({ '{{json .Mounts}}': mounts });
+    expect(getContainerWorkdir('cid', { spawnSyncFn })).toBeNull();
+  });
+
+  it('returns null on inspect failure or invalid JSON', () => {
+    const failFn: SpawnFn = () => ({ status: 1, stdout: '', stderr: 'boom' });
+    expect(getContainerWorkdir('cid', { spawnSyncFn: failFn })).toBeNull();
+    const badJson: SpawnFn = () => ({ status: 0, stdout: 'not json', stderr: '' });
+    expect(getContainerWorkdir('cid', { spawnSyncFn: badJson })).toBeNull();
+  });
+});
+
+describe('execInContainer — MCEU user derivation + workdir fix', () => {
+  it('R5: auto-derives user AND workdir, passing both to docker exec', async () => {
     const inspectCalls: Array<readonly string[]> = [];
-    const spawnSyncFn: SpawnFn = (_cmd, args) => {
+    const spawnSyncFn: SpawnFn = (cmd, args) => {
       inspectCalls.push(args);
-      return { status: 0, stdout: 'dev\n', stderr: '' };
+      return inspectRouter({
+        '{{.Config.User}}': 'dev\n',
+        '{{json .Mounts}}': MOUNTS_JSON,
+      })(cmd, args);
     };
     let execArgs: readonly string[] = [];
     const spawnAsyncFn: ExecFn = (_cmd, args) => {
@@ -85,11 +133,13 @@ describe('execInContainer — MCEU user derivation', () => {
       { spawnSyncFn, spawnAsyncFn },
     );
     expect(code).toBe(0);
-    expect(inspectCalls).toHaveLength(1);
-    expect(execArgs).toEqual(['exec', '--user', 'dev', 'cid_x', 'moot', 'status']);
+    expect(inspectCalls).toHaveLength(2); // Config.User + Mounts
+    expect(execArgs).toEqual([
+      'exec', '--user', 'dev', '-w', '/workspaces/proj', 'cid_x', 'moot', 'status',
+    ]);
   });
 
-  it('R6: honors an explicit options.user override without consulting docker inspect', async () => {
+  it('R6: honors explicit user + workdir overrides without consulting docker inspect', async () => {
     let inspectCalled = false;
     const spawnSyncFn: SpawnFn = () => {
       inspectCalled = true;
@@ -103,10 +153,26 @@ describe('execInContainer — MCEU user derivation', () => {
     await execInContainer(
       'cid_x',
       ['whoami'],
-      { user: 'root' },
+      { user: 'root', workdir: '/workspaces/p' },
       { spawnSyncFn, spawnAsyncFn },
     );
     expect(inspectCalled).toBe(false);
-    expect(execArgs).toEqual(['exec', '--user', 'root', 'cid_x', 'whoami']);
+    expect(execArgs).toEqual([
+      'exec', '--user', 'root', '-w', '/workspaces/p', 'cid_x', 'whoami',
+    ]);
+  });
+
+  it('R7: omits -w when the workspace mount cannot be resolved', async () => {
+    const spawnSyncFn = inspectRouter({
+      '{{.Config.User}}': 'node\n',
+      '{{json .Mounts}}': JSON.stringify([{ Destination: '/data' }]),
+    });
+    let execArgs: readonly string[] = [];
+    const spawnAsyncFn: ExecFn = (_cmd, args) => {
+      execArgs = args;
+      return Promise.resolve(0);
+    };
+    await execInContainer('cid_x', ['moot', 'up'], {}, { spawnSyncFn, spawnAsyncFn });
+    expect(execArgs).toEqual(['exec', '--user', 'node', 'cid_x', 'moot', 'up']);
   });
 });
