@@ -102,18 +102,56 @@ export async function devcontainerUp(
 /**
  * Resolve the user `docker exec` should run as for container `cid`.
  *
- * Runs `docker inspect --format '{{.Config.User}}' <cid>` and returns the
- * trimmed `Config.User`. Falls back to `'node'` when that value is empty —
- * which also covers an inspect failure (a non-zero exit yields empty stdout),
- * so a USER-less image or a container that vanished after `requireContainerId`
- * degrades to the historical default instead of raising.
+ * Prefers the devcontainer's configured `remoteUser` (read from the
+ * `devcontainer.metadata` label the devcontainer CLI stamps), then the image's
+ * `Config.User`, then `'node'`. The remoteUser must win because the image's
+ * `Config.User` is commonly `root` even when the devcontainer runs as a
+ * non-root user (e.g. `node`): execing as root would create root-owned files in
+ * the bind-mounted workspace and trip git's "dubious ownership" guard against
+ * the (user-owned) repo. Falls back gracefully on inspect failure (empty
+ * stdout) so a USER-less image or a vanished container degrades to `'node'`.
  */
 export function getContainerUser(cid: string, deps: DockerDeps = {}): string {
   const spawnFn = deps.spawnSyncFn ?? defaultSpawnSync;
+  const meta = spawnFn('docker', [
+    'inspect', '--format', '{{index .Config.Labels "devcontainer.metadata"}}', cid,
+  ]);
+  if (meta.status === 0) {
+    const remoteUser = remoteUserFromMetadata(meta.stdout);
+    if (remoteUser) return remoteUser;
+  }
   const result = spawnFn('docker', [
     'inspect', '--format', '{{.Config.User}}', cid,
   ]);
   return result.stdout.trim() || 'node';
+}
+
+/**
+ * Extract the effective `remoteUser` from a `devcontainer.metadata` label.
+ *
+ * The label is a JSON array of config fragments (from the devcontainer.json and
+ * each feature); the effective value is the LAST fragment that sets one (merge
+ * order). Returns null when the label is absent, unparseable, or sets no
+ * remoteUser.
+ */
+export function remoteUserFromMetadata(metadataJson: string): string | null {
+  const trimmed = metadataJson.trim();
+  if (!trimmed) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+  const fragments = Array.isArray(parsed) ? parsed : [parsed];
+  let user: string | null = null;
+  for (const frag of fragments) {
+    if (frag && typeof frag === 'object') {
+      const ru = (frag as { remoteUser?: unknown }).remoteUser;
+      if (typeof ru === 'string' && ru) user = ru; // last one wins
+    }
+  }
+  return user;
 }
 
 /**

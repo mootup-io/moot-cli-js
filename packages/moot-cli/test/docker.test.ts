@@ -4,6 +4,7 @@ import {
   execInContainer,
   getContainerUser,
   getContainerWorkdir,
+  remoteUserFromMetadata,
   type ExecFn,
   type SpawnFn,
 } from '../src/docker.js';
@@ -50,19 +51,27 @@ describe('containerIdOrNone — T7', () => {
   });
 });
 
-describe('getContainerUser — MCEU', () => {
-  it('R1: returns the trimmed Config.User from docker inspect', () => {
-    const calls: Array<{ cmd: string; args: readonly string[] }> = [];
-    const spawnSyncFn: SpawnFn = (cmd, args) => {
-      calls.push({ cmd, args });
-      return { status: 0, stdout: 'dev\n', stderr: '' };
-    };
+const DC_META_NODE = JSON.stringify([{}, { remoteUser: 'node' }]);
+const META_FMT = '{{index .Config.Labels "devcontainer.metadata"}}';
+const USER_FMT = '{{.Config.User}}';
+
+describe('getContainerUser — devcontainer remoteUser preference', () => {
+  it('prefers the devcontainer remoteUser over Config.User (root)', () => {
+    // The image USER is root, but the devcontainer runs as node — node must win
+    // so agents don't create root-owned files / trip git dubious-ownership.
+    const spawnSyncFn = inspectRouter({
+      [META_FMT]: DC_META_NODE,
+      [USER_FMT]: 'root\n',
+    });
+    expect(getContainerUser('cid', { spawnSyncFn })).toBe('node');
+  });
+
+  it('R1: falls back to Config.User when no remoteUser metadata', () => {
+    const spawnSyncFn = inspectRouter({
+      [META_FMT]: '',          // no devcontainer.metadata label
+      [USER_FMT]: 'dev\n',
+    });
     expect(getContainerUser('cid_abc', { spawnSyncFn })).toBe('dev');
-    expect(calls).toHaveLength(1);
-    expect(calls[0]!.cmd).toBe('docker');
-    expect(calls[0]!.args).toEqual([
-      'inspect', '--format', '{{.Config.User}}', 'cid_abc',
-    ]);
   });
 
   it('R2: returns node for the moot-template default container', () => {
@@ -78,6 +87,24 @@ describe('getContainerUser — MCEU', () => {
   it('R4: falls back to node when docker inspect fails (non-zero exit)', () => {
     const spawnSyncFn: SpawnFn = () => ({ status: 1, stdout: '', stderr: 'no such container' });
     expect(getContainerUser('cid', { spawnSyncFn })).toBe('node');
+  });
+});
+
+describe('remoteUserFromMetadata', () => {
+  it('returns the last fragment that sets remoteUser (merge order)', () => {
+    const meta = JSON.stringify([
+      { remoteUser: 'vscode' },
+      {},
+      { remoteUser: 'node' },
+    ]);
+    expect(remoteUserFromMetadata(meta)).toBe('node');
+  });
+
+  it('returns null for empty, non-array, or remoteUser-less metadata', () => {
+    expect(remoteUserFromMetadata('')).toBeNull();
+    expect(remoteUserFromMetadata('not json')).toBeNull();
+    expect(remoteUserFromMetadata(JSON.stringify([{}, { containerUser: 'x' }]))).toBeNull();
+    expect(remoteUserFromMetadata(JSON.stringify({ remoteUser: 'node' }))).toBe('node');
   });
 });
 
@@ -133,7 +160,7 @@ describe('execInContainer — MCEU user derivation + workdir fix', () => {
       { spawnSyncFn, spawnAsyncFn },
     );
     expect(code).toBe(0);
-    expect(inspectCalls).toHaveLength(2); // Config.User + Mounts
+    expect(inspectCalls).toHaveLength(3); // metadata + Config.User + Mounts
     expect(execArgs).toEqual([
       'exec', '--user', 'dev', '-w', '/workspaces/proj', 'cid_x', 'moot', 'status',
     ]);
