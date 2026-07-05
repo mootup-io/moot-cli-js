@@ -75,4 +75,4 @@ export { generateClaudeCode } from './harness/claude-code.js';
 export { generateCursorAgent } from './harness/cursor-agent.js';
 export { generateCursorIde } from './harness/cursor-ide.js';
 export { generateSdk } from './harness/sdk.js';
-export { generateCodex, type GenerateCodexArgs } from './harness/codex.js';
+export { generateCodex } from './harness/codex.js';

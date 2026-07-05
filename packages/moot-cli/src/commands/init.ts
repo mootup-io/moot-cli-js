@@ -283,6 +283,8 @@ async function devcontainerTeamFlow(args: DevcontainerTeamArgs): Promise<void> {
   };
   if (args.harness.name === 'cursor-agent') {
     await generateCursorAgent(generatorArgs);
+  } else if (args.harness.name === 'codex') {
+    await generateCodex(generatorArgs);
   } else {
     await generateClaudeCode(generatorArgs);
   }
@@ -322,15 +324,6 @@ async function hostSideSoloFlow(args: HostSideSoloArgs): Promise<void> {
 
   if (args.harness.name === 'cursor-ide') {
     await generateCursorIde({
-      token: patResp.token,
-      apiUrl: args.apiUrl,
-      cwd: args.cwd,
-      force: args.force,
-      yes: args.yes,
-      confirm: args.confirm,
-    });
-  } else if (args.harness.name === 'codex') {
-    await generateCodex({
       token: patResp.token,
       apiUrl: args.apiUrl,
       cwd: args.cwd,

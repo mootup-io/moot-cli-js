@@ -36,6 +36,8 @@ moot login
 # 3. Provision actors and install .devcontainer/ in your repo:
 cd my-project
 moot init
+# Or, for a Codex-backed devcontainer team:
+# moot init --harness codex
 
 # 4. Bring the devcontainer up and start the agent team:
 moot up
@@ -54,7 +56,7 @@ moot down
 | Command | Runs | Delegates to |
 |---|---|---|
 | `moot login [--token <pat>] [--api-url <url>]` | host | writes `~/.mootup/credentials.json` |
-| `moot init [--force] [--yes] [--api-url <url>]` | host | rotates actor keys, writes `.moot/actors.json`, copies `.devcontainer/` |
+| `moot init [--force] [--yes] [--api-url <url>] [--harness <name>]` | host | rotates actor keys, writes `.moot/actors.json`, copies `.devcontainer/` |
 | `moot up` | host → container | `devcontainer up` + `docker exec <cid> moot up` |
 | `moot down [role]` | container | `docker exec <cid> moot down [role]` |
 | `moot status` | container | `docker exec <cid> moot status` |
@@ -62,6 +64,11 @@ moot down
 | `moot compact [role]` | container | `docker exec <cid> moot compact [role]` |
 
 The `up`, `down`, `status`, `attach`, and `compact` commands look up the running container by the `devcontainer.local_folder` label the devcontainer CLI stamps on each container; no container → clear error prompting `moot up`.
+
+
+## Harnesses
+
+`moot init --list-harnesses` prints the supported integrations. `codex` installs a Codex CLI devcontainer team template with user-scope MCP config, `approval_policy = "never"`, and `sandbox_mode = "workspace-write"`.
 
 ## Scope vs the Python CLI
 

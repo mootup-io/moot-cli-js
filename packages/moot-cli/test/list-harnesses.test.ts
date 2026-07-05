@@ -23,7 +23,7 @@ describe('--list-harnesses (R-LIST)', () => {
     expect(lines[0]).toMatch(/^claude-code \(devcontainer-team\):/);
     expect(lines[1]).toMatch(/^cursor-agent \(devcontainer-team\):/);
     expect(lines[2]).toMatch(/^cursor-ide \(host-side-solo\):/);
-    expect(lines[3]).toMatch(/^codex \(host-side-solo\):/);
+    expect(lines[3]).toMatch(/^codex \(devcontainer-team\):/);
     expect(lines[4]).toMatch(/^sdk \(host-side-solo\):/);
     expect(out.endsWith('\n')).toBe(true);
   });

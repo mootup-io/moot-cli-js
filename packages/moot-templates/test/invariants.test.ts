@@ -66,3 +66,35 @@ describe('TMPL-1 skill bundle + loop-6 template', () => {
     }
   });
 });
+
+
+describe('codex devcontainer template', () => {
+  it('installs Codex and writes user-scope MCP + sandbox config', () => {
+    const postCreate = readFileSync(
+      join(getTemplatesDir(), 'codex-devcontainer', 'post-create.sh'),
+      'utf8',
+    );
+    expect(postCreate).toContain('https://chatgpt.com/codex/install.sh');
+    expect(postCreate).toContain('CODEX_NON_INTERACTIVE=1');
+    expect(postCreate).toContain('approval_policy = "never"');
+    expect(postCreate).toContain('sandbox_mode = "workspace-write"');
+    expect(postCreate).toContain('[mcp_servers.convo]');
+    expect(postCreate).toContain('[mcp_servers.convo-channel]');
+    expect(postCreate).toContain('run-moot-mcp.sh');
+    expect(postCreate).toContain('run-moot-channel.sh');
+    expect(postCreate).toContain('model_provider = "moot-llm-proxy"');
+    expect(postCreate).toContain('base_url = "http://127.0.0.1:8090/v1"');
+    expect(postCreate).toContain('AGENTS.md');
+    expect(postCreate).toContain('.agents/skills');
+    expect(postCreate).not.toContain('claude mcp add');
+  });
+
+  it('uses a Codex-specific devcontainer name', () => {
+    const config = readFileSync(
+      join(getTemplatesDir(), 'codex-devcontainer', 'devcontainer.json'),
+      'utf8',
+    );
+    expect(config).toContain('moot-agent-team-codex');
+    expect(config).toContain('moot-codex-${localWorkspaceFolderBasename}');
+  });
+});
