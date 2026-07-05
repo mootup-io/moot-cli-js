@@ -1,6 +1,6 @@
 {
   "name": "@mootup/moot-sdk",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "description": "Typed HTTP client AND MCP harness helpers (connectMootup) for the convo (mootup) API. Zero MCP SDK dependency — duck-typed client interface.",
   "license": "MIT",
   "repository": {
